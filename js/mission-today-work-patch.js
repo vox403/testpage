@@ -1,4 +1,3 @@
-/* VOXTEK MISSION channel selector + today-work bridge */
 (function () {
   "use strict";
 
@@ -183,6 +182,25 @@
     return false;
   }
 
+
+  function bindPasswordFollowup() {
+    const btn = $('missionPasswordBtn');
+    const input = $('missionPasswordInput');
+    const follow = () => setTimeout(() => {
+      if (shouldUseMissionSelector()) showMissionSelector();
+    }, 80);
+    if (btn && !btn.dataset.todayWorkFollowupBound) {
+      btn.dataset.todayWorkFollowupBound = '1';
+      btn.addEventListener('click', follow);
+    }
+    if (input && !input.dataset.todayWorkFollowupBound) {
+      input.dataset.todayWorkFollowupBound = '1';
+      input.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') follow();
+      });
+    }
+  }
+
   function patchMissionRender() {
     if (window.__voxtekTodayWorkPatchApplied) return;
     window.__voxtekTodayWorkPatchApplied = true;
@@ -317,6 +335,7 @@
     ensureStyles();
     ensureSelectorViews();
     patchMissionRender();
+    bindPasswordFollowup();
     patchEvaluationScore();
     window.addEventListener('message', handleTodayWorkMessage);
   }
