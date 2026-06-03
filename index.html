@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <title>VOXTEK Desktop Portal</title>
+
+  <link rel="stylesheet" href="css/voxtek.css" />
+</head>
+<body>
+  <div id="app">
+    <section id="loginScreen" class="screen login-screen">
+      <div class="login-panel">
+        <div class="login-brand">
+          <div class="brand-badge">V</div>
+          <div class="brand-copy">
+            <strong>VOXTEK</strong>
+            <span>Corporate Access Protocol</span>
+          </div>
+        </div>
+
+        <h1 class="login-title">
+  복스테크에 오신 것을 환영합니다!<br>
+  <span class="login-title-sub">이름을 입력하세요.</span>
+</h1>
+        <div class="login-form">
+          <div class="input-shell">
+            <label for="employeeName">Name</label>
+            <input id="employeeName" type="text" maxlength="24" autocomplete="off" placeholder="이름을 입력하세요" />
+          </div>
+
+          <div class="login-actions">
+            <button id="loginBtn" class="vox-btn vox-btn-primary">로그인</button>
+            <button id="quitBtn" class="vox-btn vox-btn-secondary hidden">퇴사하기</button>
+            <button id="adminLoginOpenBtn" class="vox-btn vox-btn-secondary" type="button">관리자 로그인</button>
+          </div>
+
+          <div id="loginStatus" class="login-status"></div>
+          <div id="loginNote" class="login-note"></div>
+        </div>
+
+        <div id="bootOverlay" class="boot-overlay hidden">
+          <div class="boot-box">
+            <div class="boot-title">VoxTek Employee Verification</div>
+            <div class="boot-line">[1/3] EMPLOYEE RECORD SYNC...</div>
+            <div class="boot-line">[2/3] WORKSTATION DESKTOP LOAD...</div>
+            <div class="boot-line">[3/3] ACCESS GRANTED.</div>
+            <div class="progress"><span></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div id="adminLoginModal" class="modal-backdrop admin-login-backdrop hidden">
+      <div class="modal admin-login-modal">
+        <h3>관리자 로그인</h3>
+        <p>Vees 대표 전용 접속입니다. 계정을 선택하고 지급받은 관리자 키를 입력하십시오.</p>
+        <div class="admin-account-list" aria-label="관리자 계정 선택">
+          <button class="admin-account-btn is-selected" type="button" data-admin-key="vox">
+            <strong>복스</strong>
+          </button>
+          <button class="admin-account-btn" type="button" data-admin-key="valentino">
+            <strong>발렌티노</strong>
+          </button>
+          <button class="admin-account-btn" type="button" data-admin-key="velvette">
+            <strong>벨벳</strong>
+          </button>
+        </div>
+        <div class="input-shell admin-pass-shell">
+          <label for="adminPasscodeInput">KEY</label>
+          <input id="adminPasscodeInput" type="password" autocomplete="off" placeholder="관리자 키 입력" />
+        </div>
+        <div id="adminLoginStatus" class="login-status admin-login-status"></div>
+        <div class="modal-actions">
+          <button id="adminLoginCancel" class="vox-btn vox-btn-secondary" type="button">취소</button>
+          <button id="adminLoginConfirm" class="vox-btn vox-btn-primary" type="button">접속</button>
+        </div>
+      </div>
+    </div>
+
+
+
+    <section id="introScreen" class="screen intro-screen hidden">
+      <article id="introPopup" class="intro-popup" style="left:calc(50% - 310px); top:calc(50% - 220px);">
+        <div class="intro-header" id="introDragHandle">
+          <div class="intro-title">
+            <strong>VOX BOT PROFILE</strong>
+            <span>Personal Introduction Popup</span>
+          </div>
+          <button id="introCloseBtn" class="intro-close" type="button" aria-label="닫기">✕</button>
+        </div>
+        <div class="intro-body">
+          <div class="intro-label">Introduction Notice</div>
+          <ul class="intro-list">
+            <li class="intro-item">
+              <div class="intro-num">01</div>
+              <div class="intro-copy intro-copy-inline">해즈빈 호텔, 복스 <strong class="intro-handle">@vox403_</strong></div>
+            </li>
+            <li class="intro-item">
+              <div class="intro-num">02</div>
+              <div class="intro-copy intro-copy-inline">비즈니스 파트너 <strong class="intro-handle">@pimplife_</strong></div>
+            </li>
+            <li class="intro-item">
+              <div class="intro-num">03</div>
+              <div class="intro-copy intro-copy-inline">최고의 동료 <strong class="intro-handle">@Vel_spotlight_</strong></div>
+            </li>
+            <li class="intro-item">
+              <div class="intro-num">04</div>
+              <div class="intro-copy">뒷주 자아 없이 대할 예정이니 참고 바람</div>
+            </li>
+            <li class="intro-item">
+              <div class="intro-num">05</div>
+              <div class="intro-copy">장르 내 봇 혹은 지옥 주민으로 올 것</div>
+            </li>
+          </ul>
+        </div>
+      </article>
+    </section>
+
+    <section id="desktopScreen" class="screen desktop hidden">
+      <header class="topbar">
+        <div class="topbar-left">
+          <div class="topbar-logo">VOXTEK</div>
+          <div class="topbar-sub">Pentagram City Media Infrastructure</div>
+        </div>
+        <div class="topbar-right">
+          <div class="chip employee-chip"><span id="topbarRoleLabel">사원</span> <strong id="topbarName">-</strong></div>
+          <button id="soundToggle" class="chip vox-btn-secondary" type="button">SOUND OFF</button>
+          <div id="clockChip" class="chip clock-chip">--:--:--</div>
+        </div>
+      </header>
+
+      <div class="desktop-main">
+        <div class="icon-dock">
+          <button class="desktop-icon" data-app="mail" id="mailDesktopIcon" aria-live="polite">
+            <div class="icon-frame mail-icon-frame">
+              <img src="icon_1.png" alt="MAIL 아이콘" onerror="assetFail(this)" loading="lazy" decoding="async">
+              <div class="icon-fallback">MAIL</div>
+              <span id="mailUnreadBadge" class="mail-unread-badge hidden">0</span>
+            </div>
+            <div class="icon-label">MAIL</div>
+          </button>
+
+          <button class="desktop-icon" data-app="internet">
+            <div class="icon-frame">
+              <img src="icon_2.png" alt="WIKI 아이콘" onerror="assetFail(this)" loading="lazy" decoding="async">
+              <div class="icon-fallback">WIKI</div>
+            </div>
+            <div class="icon-label">WIKI</div>
+          </button>
+
+          <button class="desktop-icon" data-app="helltalk">
+            <div class="icon-frame">
+              <img src="icon_00.png" alt="MISSION 아이콘" onerror="assetFail(this)" loading="lazy" decoding="async">
+              <div class="icon-fallback">MISSION</div>
+            </div>
+            <div class="icon-label">MISSION</div>
+          </button>
+
+          <button class="desktop-icon" data-app="support">
+            <div class="icon-frame">
+              <img src="icon_5.png" alt="VOC 아이콘" onerror="assetFail(this)" loading="lazy" decoding="async">
+              <div class="icon-fallback">VOC</div>
+            </div>
+            <div class="icon-label">VOC</div>
+          </button>
+
+          <button class="desktop-icon" data-app="evaluation">
+            <div class="icon-frame">
+              <img src="icon_7.png" alt="EVALUATION 아이콘" onerror="assetFail(this)" loading="lazy" decoding="async">
+              <div class="icon-fallback">EVAL</div>
+            </div>
+            <div class="icon-label">EVALUATION</div>
+          </button>
+
+          <button class="desktop-icon" data-app="gallery">
+            <div class="icon-frame">
+              <img src="icon_4.png" alt="ALBUM 아이콘" onerror="assetFail(this)" loading="lazy" decoding="async">
+              <div class="icon-fallback">ALBUM</div>
+            </div>
+            <div class="icon-label">ALBUM</div>
+          </button>
+
+          <button class="desktop-icon" data-app="music">
+            <div class="icon-frame">
+              <img src="icon_3.png" alt="BROADCAST 아이콘" onerror="assetFail(this)" loading="lazy" decoding="async">
+              <div class="icon-fallback">BROAD</div>
+            </div>
+            <div class="icon-label">BROADCAST</div>
+          </button>
+
+          <button class="desktop-icon" data-app="idcard">
+            <div class="icon-frame">
+              <img src="icon_6.png" alt="ID 아이콘" onerror="assetFail(this)" loading="lazy" decoding="async">
+              <div class="icon-fallback">ID</div>
+            </div>
+            <div class="icon-label">ID</div>
+          </button>
+        </div>
+
+        <div class="desktop-hero">
+          <img src="voxtek_1.png" alt="VOXTEK 메인 이미지" onerror="assetFail(this)" loading="lazy" decoding="async">
+          <div class="fallback">VOXTEK</div>
+        </div>
+
+        <div class="window-layer" id="windowLayer">
+          <!-- Mail -->
+          <section class="window hidden" id="window-mail" style="top:84px; left:136px; width:min(1020px, calc(100vw - 72px));">
+            <div class="window-header" data-drag-handle>
+              <div class="window-title">메일 <small>Internal Inbox</small></div>
+              <div class="window-controls">
+                <button class="window-btn window-close" data-close="window-mail">✕</button>
+              </div>
+            </div>
+            <div class="window-body">
+              <div id="mailShell" class="mail-shell">
+                <aside class="mail-list-panel">
+                  <div class="mail-list-head">
+                    <strong>받은 메일함</strong>
+                    <span>VOXTEK INTERNAL MAIL</span>
+                  </div>
+                  <div id="mailList" class="mail-list"></div>
+                </aside>
+                <article id="mailDetail" class="mail-detail-panel">
+                  <div class="mail-empty">
+                    <div>
+                      <strong>메일을 선택하세요.</strong>
+                      받은 메일 제목을 클릭하면 상세 내용이 표시됩니다.
+                    </div>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </section>
+
+          <!-- WIKI -->
+          <section class="window hidden" id="window-internet" style="top:96px; left:214px;">
+            <div class="window-header" data-drag-handle>
+              <div class="window-title">WIKI <small>Voxpedia Search</small></div>
+              <div class="window-controls">
+                <button class="window-btn window-close" data-close="window-internet">✕</button>
+              </div>
+            </div>
+            <div class="window-body">
+              <div class="search-shell">
+                <div class="search-bar">
+                  <input id="searchInput" class="search-input" type="text" placeholder="검색어를 입력하세요. 예: 복스 / 발렌티노 / 벨벳 / 알래스터 / 엔젤 더스트 / 찰리 / vees" autocomplete="off">
+                  <button id="searchBtn" class="vox-btn vox-btn-primary" type="button">검색</button>
+                  
+                  <div class="search-tags">
+                    <button class="tag" type="button" data-query="복스">복스</button>
+                    <button class="tag" type="button" data-query="발렌티노">발렌티노</button>
+                    <button class="tag" type="button" data-query="벨벳">벨벳</button>
+                    <button class="tag" type="button" data-query="vees">vees</button>
+                  </div>
+
+                </div>
+
+                <div id="searchResult" class="search-empty">
+                  <strong>Voxpedia 검색 대기 중.</strong><br>
+                  좌측 검색창에 이름을 입력하면 관련 정보가 표시됩니다.<br>
+                  권장 검색어: 복스, 발렌티노, 벨벳, 알래스터, 엔젤, 찰리, 루시퍼, 허스크, 배기, vees
+                  <div class="search-note">※ vees 관련 결과는 홍보성 서술이 우선 적용됩니다.</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- MISSION -->
+          <section class="window hidden" id="window-helltalk" style="top:76px; left:150px; width:min(1040px, calc(100vw - 72px));">
+            <div class="window-header" data-drag-handle>
+              <div class="window-title">MISSION <small>Vox Direct Assignment</small></div>
+              <div class="window-controls">
+                <button id="missionArchiveBtn" class="window-btn" type="button" title="Mission Archive">▦</button>
+                <button class="window-btn window-close" data-close="window-helltalk">✕</button>
+              </div>
+            </div>
+            <div class="window-body">
+              <div class="mission-shell">
+                <section id="missionGateView" class="mission-panel">
+                  <div class="mission-top">
+                    <strong>VOXTEK MISSION CHANNEL</strong>
+                    <div class="mission-top-right">
+                      <span class="mission-status">SECURE LINE</span>
+                    </div>
+                  </div>
+                  <div class="mission-gate">
+                    <div class="mission-gate-card">
+                      <h3>MISSION ACCESS REQUIRED</h3>
+                      <p>이 채널은 입사 44일차부터 활성화됩니다. 지급받은 공통 패스워드를 입력하세요.</p>
+                      <div id="missionGateDayInfo" class="mission-gate-info">근속 기록 확인 중...</div>
+                      <label for="missionPasswordInput">Password</label>
+                      <input id="missionPasswordInput" type="password" autocomplete="off" placeholder="전용 패스워드">
+                      <div class="mission-actions">
+                        <button id="missionPasswordBtn" class="mission-btn primary" type="button">Access</button>
+                      </div>
+                      <div id="missionPasswordStatus" class="mission-gate-status"></div>
+                    </div>
+                  </div>
+                </section>
+
+                <section id="missionChatView" class="mission-panel hidden">
+                  <div class="mission-top">
+                    <strong>VOXTEK MISSION CHANNEL</strong>
+                    <div class="mission-top-right">
+                      <span id="missionPointDisplay" class="mission-point-chip">POINT <b>0</b></span>
+                      <span id="missionChannelStatus" class="mission-status">DIRECT LINE</span>
+                    </div>
+                  </div>
+                  <div id="missionChatRoom" class="mission-room"></div>
+                  <div class="mission-input">
+                    <input id="missionReplyInput" type="text" value="임무 내용을 확인했습니다." readonly>
+                    <button id="missionSendBtn" class="mission-btn primary" type="button">전송</button>
+                  </div>
+                  <div class="mission-mini-actions">
+                    <button id="missionAcceptBtn" class="mission-btn primary hidden" type="button">미션 받기</button>
+                    <button id="missionReturnCareBtn" class="mission-btn secondary hidden" type="button">관리 화면으로 돌아가기</button>
+                  </div>
+                </section>
+
+                <section id="missionSetupView" class="mission-setup hidden">
+                  <div class="mission-setup-grid">
+                    <div class="mission-frame">
+                      <img id="missionSetupEggImg" data-src="egg.png" alt="알" onerror="assetFail(this)" loading="lazy" decoding="async">
+                      <div class="fallback"></div>
+                    </div>
+                    <div class="mission-info-card">
+                      <h3>생명체 등록</h3>
+                      <p class="muted">식별명을 등록하면 관리 임무가 시작됩니다.</p>
+                      <label for="missionCreatureName">Creature Name</label>
+                      <input id="missionCreatureName" maxlength="18" autocomplete="off" placeholder="생명체 이름을 입력하세요">
+                      <div class="mission-actions">
+                        <button id="missionStartBtn" class="mission-btn primary" type="button">Name & Start</button>
+                        <button id="missionBackChatBtn" class="mission-btn secondary" type="button">채널로 돌아가기</button>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section id="missionGameView" class="mission-game hidden">
+                  <div class="mission-game-grid">
+                    <article class="mission-info-card">
+                      <div class="mission-creature-top">
+                        <div>
+                          <h3 id="missionCreatureTitle">-</h3>
+                          <div id="missionSpeech" class="mission-speech">…</div>
+                        </div>
+                        <div class="mission-chip-row">
+                          <div id="missionStageChip" class="mission-stat-chip">STAGE <b>-</b></div>
+                          <div id="missionHealthChip" class="mission-stat-chip">STATUS <b>-</b></div>
+                        </div>
+                      </div>
+                      <div class="mission-creature-frame">
+                        <img id="missionCreatureImg" data-src="egg.png" onerror="assetFail(this)" alt="creature" loading="lazy" decoding="async">
+                        <div id="missionCreatureFallback" class="fallback"></div>
+                        <div class="mission-overlay">
+                          <div id="missionDayChip" class="mission-stat-chip">DAY <b>01</b></div>
+                        </div>
+                      </div>
+                    </article>
+                    <aside class="mission-info-card">
+                      <h3>Care Console</h3>
+                      <div class="mission-meter"><div class="mission-meter-head"><span>보유 포인트</span><b id="missionPointText">0 POINT</b></div><div class="mission-bar"><span id="missionPointBar"></span></div></div>
+                      <div class="mission-meter"><div class="mission-meter-head"><span>성장 진행도</span><b id="missionGrowthText">0%</b></div><div class="mission-bar"><span id="missionGrowthBar"></span></div></div>
+                      <div class="mission-meter"><div class="mission-meter-head"><span>애정도</span><b id="missionAffText">-</b></div><div class="mission-bar"><span id="missionAffBar"></span></div></div>
+                      <div class="mission-care-grid">
+                        <button id="missionFeedBtn" class="mission-care"><b>밥 주기</b><span>1 POINT</span></button>
+                        <button id="missionBathBtn" class="mission-care"><b>목욕</b><span>1 POINT</span></button>
+                        <button id="missionPetBtn" class="mission-care"><b>쓰다듬기</b><span>1 POINT</span></button>
+                        <button id="missionTalkBtn" class="mission-care"><b>대화</b><span>1 POINT</span></button>
+                        <button id="missionMedicineBtn" class="mission-care medicine"><b>약 주기</b><span>3 POINT</span></button>
+                      </div>
+                      <div id="missionStageNotice" class="mission-side-note"></div>
+                      <div class="mission-actions"><button id="missionReturnChatBtn" class="mission-btn secondary" type="button">채널로 돌아가기</button></div>
+                      <div class="mission-feedback">
+                        <label for="missionFeedback">Employee Feedback</label>
+                        <textarea id="missionFeedback" placeholder="복스에게 남길 의견, 보고, 건의사항을 입력하세요."></textarea>
+                        <div class="mission-actions"><button id="missionFeedbackBtn" class="mission-btn secondary" type="button">Submit Feedback</button></div>
+                      </div>
+                    </aside>
+                  </div>
+                </section>
+
+                <section id="missionFinalView" class="mission-final hidden">
+                  <article class="mission-info-card">
+                    <div class="dialog"><div class="speaker"><strong>VOX</strong><span>MISSION RETURN PROTOCOL</span></div><div id="missionFinalText"></div></div>
+                    <div class="mission-ending-frame"><img id="missionEndingImg" data-src="Happy.png" onerror="assetFail(this)" alt="ending" loading="lazy" decoding="async"><div id="missionEndingFallback" class="fallback"></div></div>
+                    <div id="missionEndingCaption" class="mission-side-note" style="margin-top:14px"></div>
+                    <div class="mission-actions"><button id="missionNewMissionBtn" class="mission-btn primary" type="button">새로운 임무 받기</button></div>
+                  </article>
+                </section>
+
+                <section id="missionDeadView" class="mission-dead hidden">
+                  <article class="mission-info-card">
+                    <h3>MISSION FAILED</h3>
+                    <p>생체 반응이 끊어졌습니다. 이 임무는 더 이상 진행할 수 없습니다. 리셋하지 않으면 새 임무를 받을 수 없습니다.</p>
+                    <div class="vox-report-box">
+                      <div class="vox-report-head">
+                        <strong>VOX</strong>
+                        <span>FAILURE REPORT</span>
+                      </div>
+                      <p class="vox-report-body">관리 실패라. 아주 인상적이군. 물론 최악의 의미로 말이지. 시스템은 이 결과를 기록했고, 나는 네 변명을 들을 생각이 없어. 다시 하겠다면 리셋해. 이번에는 적어도 방치가 뭔지는 이해했길 바라지.</p>
+                    </div>
+                    <div class="mission-actions"><button id="missionResetBtn" class="mission-btn danger" type="button">임무 기록 리셋</button></div>
+                  </article>
+                </section>
+              </div>
+                <div id="adminMissionShell" class="admin-mission-shell hidden"></div>
+            </div>
+          </section>
+
+          <div id="missionArchiveModal" class="mission-manual hidden">
+            <article class="mission-manual-card mission-archive-card">
+              <div class="mission-manual-head">
+                <strong>Mission Archive</strong>
+                <button id="missionArchiveClose" class="mission-btn secondary" type="button">← 돌아가기</button>
+              </div>
+              <div class="mission-manual-body">
+                <h3>과거 임무 완료 기록</h3>
+                <div class="mission-archive-layout">
+                  <div id="missionArchiveList" class="mission-archive-list"></div>
+                  <div class="mission-archive-preview">
+                    <div id="missionArchiveImage" class="mission-archive-image">
+                      <div class="mission-archive-empty">왼쪽의 완료 기록을 선택하면 당시 엔딩 일러스트가 표시됩니다.</div>
+                    </div>
+                    <div id="missionArchiveInfo" class="mission-archive-info">아직 선택된 기록이 없습니다.</div>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+
+
+          <!-- EVALUATION / June Review -->
+          <section class="window hidden" id="window-evaluation" style="top:50%; left:50%; width:min(900px, calc(100vw - 72px)); height:min(820px, calc(100vh - 88px));">
+            <div class="window-header" data-drag-handle>
+              <div class="window-title">EVALUATION <small>June Performance Review</small></div>
+              <div class="window-controls">
+                <button class="window-btn window-close" data-close="window-evaluation">✕</button>
+              </div>
+            </div>
+            <div class="window-body">
+              <div class="evaluation-shell">
+                <section class="evaluation-panel">
+                  <div class="evaluation-top">
+                    <strong>JUNE PERFORMANCE REVIEW</strong>
+                    <span id="evaluationStatus" class="evaluation-status">LOCKED</span>
+                  </div>
+                  <div id="evaluationBody" class="evaluation-body"></div>
+                </section>
+              </div>
+            </div>
+          </section>
+
+          <!-- VOC / Customer Voice -->
+          <section class="window hidden" id="window-support" style="top:50%; left:50%; width:min(780px, calc(100vw - 72px)); height:min(820px, calc(100vh - 88px));">
+            <div class="window-header window-header-voc" data-drag-handle>
+              <div class="window-title">VOC <small>Internal Counsel Line</small></div>
+              <div class="window-controls voc-window-controls">
+                <div class="voc-public-launcher" aria-label="공개 답변 소속 선택">
+                  <button class="voc-public-toggle" type="button" data-voc-lane="valentino" aria-expanded="false" aria-controls="vocPublicBoard">발렌티노</button>
+                  <button class="voc-public-toggle" type="button" data-voc-lane="vox" aria-expanded="false" aria-controls="vocPublicBoard">복스</button>
+                  <button class="voc-public-toggle" type="button" data-voc-lane="velvette" aria-expanded="false" aria-controls="vocPublicBoard">벨벳</button>
+                  <button id="vocAdminInboxToggle" class="voc-public-toggle hidden" type="button" aria-expanded="false" aria-controls="vocPublicBoard">접수된 건의</button>
+                  <button id="vocAdminAffiliationToggle" class="voc-public-toggle hidden" type="button" aria-expanded="false" aria-controls="vocPublicBoard">소속변경</button>
+                </div>
+                <button class="window-btn window-close" data-close="window-support">✕</button>
+              </div>
+            </div>
+            <div class="window-body">
+              <div class="voc-shell">
+                <section class="voc-panel">
+                  <div class="voc-top">
+                    <strong>VOXTEK 사내 VOC 센터</strong>
+                    <span id="vocStatus" class="voc-status">WAITING</span>
+                  </div>
+                  <section id="vocPublicBoard" class="voc-public-board" aria-label="공개 VOC 답변" aria-hidden="true">
+                    <div class="voc-public-head">
+                      <div>
+                        <strong id="vocPublicTitle">공개 답변 기록</strong>
+                        <span id="vocPublicDesc">질문자 정보는 표시하지 않습니다. 선택한 대표 소속의 답변만 공개됩니다.</span>
+                      </div>
+                      <button id="vocPublicClose" class="voc-public-close" type="button">닫기</button>
+                    </div>
+                    <div id="vocPublicAnswers" class="voc-public-grid"></div>
+                  </section>
+                  <div id="vocRoom" class="voc-room"></div>
+                  <div id="vocActions" class="voc-actions"></div>
+                </section>
+              </div>
+            </div>
+          </section>
+
+          <!-- ALBUM -->
+          <section class="window hidden" id="window-gallery" style="top:126px; left:190px; width:min(860px, calc(100vw - 72px));">
+            <div class="window-header" data-drag-handle>
+              <div class="window-title">ALBUM <small>VEES Official Archive</small></div>
+              <div class="window-controls">
+                <button class="window-btn window-close" data-close="window-gallery">✕</button>
+              </div>
+            </div>
+            <div class="window-body">
+              <div class="gallery-shell">
+                <div class="gallery-frame">
+                  <button id="galleryPrev" class="gallery-arrow left" type="button">‹</button>
+                  <img id="galleryImage" data-src="vees1.jpg" alt="VEES 공식 일러스트" onerror="assetFail(this)" loading="lazy" decoding="async">
+                  <div id="galleryFallback" class="asset-fallback">vees1.jpg</div>
+                  <button id="galleryNext" class="gallery-arrow right" type="button">›</button>
+                </div>
+                <div class="gallery-footer">
+                  <div id="galleryIndex" class="gallery-index">01 / 02</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- MUSIC / BROADCAST -->
+          <section class="window hidden" id="window-music" style="top:104px; left:248px; width:min(880px, calc(100vw - 72px));">
+            <div class="window-header" data-drag-handle>
+              <div class="window-title">BROADCAST <small>VoxTek Channel Selector</small></div>
+              <div class="window-controls">
+                <button class="window-btn window-close" data-close="window-music">✕</button>
+              </div>
+            </div>
+            <div class="window-body">
+              <div class="broadcast-shell">
+                <div class="broadcast-frame">
+                  <iframe
+                    id="broadcastYoutube"
+                    class="broadcast-youtube"
+                    title="VOXTEK Broadcast"
+                    src=""
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowfullscreen
+                    referrerpolicy="strict-origin-when-cross-origin">
+                  </iframe>
+
+                  <div id="broadcastIntro" class="broadcast-intro">
+                    <div class="broadcast-intro-title">채널을 선택하십시오.</div>
+                    <div class="broadcast-intro-copy">BROADCAST SIGNAL 대기 중.<br>무단 시청 기록은 전부 저장됩니다.</div>
+                    <div class="broadcast-channel-grid">
+                      <button class="broadcast-channel-btn" type="button" data-kind="video" data-youtube="https://youtu.be/PW30-o3WQuA?si=MZmdPBSDg8umFqiW" data-name="오리방송">오리방송</button>
+                      <button class="broadcast-channel-btn" type="button" data-kind="video" data-youtube="https://youtu.be/Z8QMdLe9G18?si=S0wlKPPj1X_FA8jf" data-name="상어방송">상어방송</button>
+                      <button class="broadcast-channel-btn" type="button" data-kind="video" data-youtube="https://youtu.be/RdBOOPCtXLE?si=0X_2adABsdxxJNPw" data-name="복스테크 내부방송">사내방송</button>
+                      <button class="broadcast-channel-btn" type="button" data-kind="playlist" data-playlist="https://youtube.com/playlist?list=PLAfXPMHtFkK52WaeAV-S45RAJmvZUVS33&si=aCJZzOGQ56rp2WH8" data-name="VOXTEK MUSIC PLAYLIST">뮤직</button>
+                    </div>
+                  </div>
+                </div>
+                <div id="broadcastCurrentChannel" class="broadcast-current">SIGNAL WAITING...</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ID -->
+          <section class="window hidden" id="window-idcard" style="top:122px; left:350px; width:min(520px, calc(100vw - 72px));">
+            <div class="window-header" data-drag-handle>
+              <div class="window-title">ID <small>Employee Credential</small></div>
+              <div class="window-controls">
+                <button class="window-btn window-close" data-close="window-idcard">✕</button>
+              </div>
+            </div>
+            <div class="window-body">
+              <div class="id-wrap">
+                <article class="id-card">
+                  <div class="id-head">
+                    <div>
+                      <strong>VOXTEK</strong>
+                      <span>Staff ID</span>
+                    </div>
+                    <div class="id-photo">
+                      <img id="cardBadgeImage" src="v1.png" alt="사원증 마크" onerror="assetFail(this)" loading="lazy" decoding="async">
+                      <div id="cardBadgeFallback" class="asset-fallback">v1.png</div>
+                    </div>
+                  </div>
+
+                  <div class="id-body">
+                    <dl class="id-row">
+                      <dt>환영 문구</dt>
+                      <dd><span id="cardGreeting">-</span></dd>
+                    </dl>
+                    <dl class="id-row">
+                      <dt>이름</dt>
+                      <dd class="id-name-cell">
+                        <span id="cardName">-</span>
+                        <button id="editNameBtn" class="id-mini-btn" type="button">수정</button>
+                      </dd>
+                    </dl>
+                    <dl class="id-row">
+                      <dt>입사일</dt>
+                      <dd id="cardJoinDate">-</dd>
+                    </dl>
+                    <dl class="id-row">
+                      <dt>근속</dt>
+                      <dd id="cardDayCount">입사 00일</dd>
+                    </dl>
+                    <dl class="id-row">
+                      <dt>팀</dt>
+                      <dd id="cardEmployment">-</dd>
+                    </dl>
+                    <dl class="id-row">
+                      <dt>직급</dt>
+                      <dd id="cardPosition">-</dd>
+                    </dl>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <div id="quitModal" class="modal-backdrop hidden">
+      <div class="modal">
+        <h3>되돌릴 수 없습니다.</h3>
+        <p>당신의 무가치한 인생으로 돌아가겠습니까?</p>
+        <div class="modal-actions">
+          <button id="cancelQuit" class="vox-btn vox-btn-secondary" type="button">NO</button>
+          <button id="confirmQuit" class="vox-btn vox-btn-primary" type="button">YES</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="birthdayModal" class="modal-backdrop hidden">
+      <div class="modal birthday-modal">
+        <h3>생일 기록 등록</h3>
+        <p>생일을 입력하십시오. 연도는 식별용으로만 저장되며, 생일 메일은 월/일 기준으로 발송됩니다.</p>
+        <div class="input-shell admin-pass-shell">
+          <label for="birthdayInput">BIRTH</label>
+          <input id="birthdayInput" type="date" autocomplete="off" />
+        </div>
+        <div id="birthdayStatus" class="profile-status"></div>
+        <div class="modal-actions">
+          <button id="birthdayLater" class="vox-btn vox-btn-secondary" type="button">나중에</button>
+          <button id="birthdaySave" class="vox-btn vox-btn-primary" type="button">저장</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="nameEditModal" class="modal-backdrop hidden">
+      <div class="modal name-edit-modal">
+        <h3>식별명 수정</h3>
+        <p>고유 기록은 변경되지 않습니다. 표시 이름만 갱신됩니다.</p>
+        <div class="input-shell admin-pass-shell">
+          <label for="nameEditInput">NAME</label>
+          <input id="nameEditInput" type="text" maxlength="24" autocomplete="off" placeholder="새 이름을 입력하세요" />
+        </div>
+        <div id="nameEditStatus" class="profile-status"></div>
+        <div class="modal-actions">
+          <button id="nameEditCancel" class="vox-btn vox-btn-secondary" type="button">취소</button>
+          <button id="nameEditSave" class="vox-btn vox-btn-primary" type="button">저장</button>
+        </div>
+      </div>
+    </div>
+
+    <audio id="bgAudio" src="vox_1.mp3" loop preload="auto"></audio>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/app.js"></script>
+<script src="js/mission-today-work-patch.js"></script>
+</body>
+</html>
