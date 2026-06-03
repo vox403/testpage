@@ -1,0 +1,1618 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VOXTEK TODAY WORK</title>
+<style>
+  :root {
+    --bg: #020812;
+    --panel: rgba(4, 14, 27, 0.94);
+    --panel2: rgba(7, 22, 39, 0.94);
+    --line: rgba(0, 218, 255, 0.48);
+    --line2: rgba(255, 38, 70, 0.36);
+    --cyan: #00d9ff;
+    --cyan2: #64efff;
+    --red: #ff284c;
+    --text: #e8f8ff;
+    --muted: #7fa3b2;
+    --dark: #07111d;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(0, 225, 255, 0.15), transparent 34%),
+      linear-gradient(180deg, #02040a 0%, #05101d 70%, #02040a 100%);
+    color: var(--text);
+    font-family: "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+    overflow: hidden;
+  }
+
+  button, input {
+    font: inherit;
+  }
+
+  .scanline {
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background:
+      linear-gradient(rgba(255,255,255,0.035) 50%, rgba(0,0,0,0.06) 50%);
+    background-size: 100% 4px;
+    mix-blend-mode: overlay;
+    opacity: 0.42;
+  }
+
+  .shell {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 22px;
+  }
+
+  .mission-window {
+    width: min(1100px, 96vw);
+    height: min(760px, 92vh);
+    border: 1px solid var(--line);
+    background:
+      linear-gradient(180deg, rgba(12, 31, 50, 0.98), rgba(2, 8, 18, 0.98));
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.05) inset,
+      0 0 42px rgba(0, 217, 255, 0.18),
+      0 22px 80px rgba(0,0,0,0.6);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .window-header {
+    height: 48px;
+    border-bottom: 1px solid rgba(0, 218, 255, 0.38);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    background:
+      linear-gradient(90deg, rgba(0, 217, 255, 0.12), transparent 48%, rgba(255, 40, 76, 0.12));
+  }
+
+  .window-title {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    letter-spacing: 0.05em;
+  }
+
+  .window-title strong {
+    color: #f2fcff;
+    font-size: 15px;
+  }
+
+  .window-title span {
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+
+  .window-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 10px rgba(255, 40, 76, 0.7);
+  }
+
+  .content {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+  }
+
+  .screen {
+    position: absolute;
+    inset: 0;
+    padding: 24px;
+    display: none;
+    overflow: auto;
+  }
+
+  .screen.active {
+    display: block;
+  }
+
+  .mission-intro {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .channel-top {
+    border: 1px solid rgba(0, 217, 255, 0.38);
+    background: rgba(0,0,0,0.25);
+    padding: 18px;
+    margin-bottom: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .channel-top::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, transparent, rgba(0, 217, 255, 0.08), transparent);
+    transform: translateX(-100%);
+    animation: sweep 4s linear infinite;
+  }
+
+  @keyframes sweep {
+    to { transform: translateX(100%); }
+  }
+
+  .kicker {
+    color: var(--cyan);
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    margin: 0 0 8px;
+    font-size: clamp(26px, 3vw, 42px);
+    letter-spacing: 0.04em;
+  }
+
+  .desc {
+    margin: 0;
+    color: #b8d7e3;
+    line-height: 1.65;
+    font-size: 14px;
+  }
+
+  .mission-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .mission-card {
+    min-height: 190px;
+    border: 1px solid rgba(0, 217, 255, 0.34);
+    background:
+      linear-gradient(180deg, rgba(12, 32, 52, 0.76), rgba(5, 13, 25, 0.92));
+    color: var(--text);
+    text-align: left;
+    padding: 18px;
+    cursor: pointer;
+    transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mission-card::after {
+    content: "";
+    position: absolute;
+    right: -40px;
+    bottom: -60px;
+    width: 160px;
+    height: 160px;
+    border: 1px solid rgba(0, 217, 255, 0.24);
+    transform: rotate(18deg);
+  }
+
+  .mission-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(0, 217, 255, 0.85);
+    box-shadow: 0 0 26px rgba(0, 217, 255, 0.18);
+  }
+
+  .mission-card .num {
+    color: rgba(255,255,255,0.38);
+    font-size: 12px;
+    letter-spacing: 0.2em;
+  }
+
+  .mission-card h2 {
+    margin: 18px 0 8px;
+    font-size: 24px;
+    letter-spacing: 0.05em;
+  }
+
+  .mission-card p {
+    margin: 0;
+    color: #a8c8d7;
+    line-height: 1.6;
+    font-size: 14px;
+    max-width: 420px;
+  }
+
+  .tag-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+  }
+
+  .tag {
+    border: 1px solid rgba(255,255,255,0.16);
+    color: #baeaf6;
+    background: rgba(0,0,0,0.25);
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .top-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .small-btn {
+    border: 1px solid rgba(0, 217, 255, 0.42);
+    background: rgba(0,0,0,0.26);
+    color: var(--cyan2);
+    padding: 8px 10px;
+    cursor: pointer;
+  }
+  .small-btn:hover {
+    background: rgba(0, 217, 255, 0.12);
+  }
+
+  .egg-panel {
+    max-width: 720px;
+    margin: 0 auto;
+    border: 1px solid rgba(0, 217, 255, 0.4);
+    background: rgba(0,0,0,0.25);
+    padding: 24px;
+  }
+
+  .egg-icon {
+    width: 96px;
+    height: 128px;
+    margin: 12px auto 18px;
+    border-radius: 50% 50% 45% 45%;
+    border: 2px solid rgba(0, 217, 255, 0.55);
+    background:
+      radial-gradient(circle at 45% 30%, rgba(0, 217, 255, 0.24), transparent 28%),
+      linear-gradient(180deg, #101c2a, #050b12);
+    box-shadow: inset 0 0 24px rgba(0, 217, 255, 0.15), 0 0 20px rgba(0, 217, 255, 0.12);
+  }
+
+  .game-screen {
+    padding: 12px;
+    overflow: hidden;
+  }
+
+  .game-layout {
+    height: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 260px;
+    gap: 12px;
+  }
+
+  .game-box {
+    min-width: 0;
+    min-height: 0;
+    border: 1px solid rgba(0, 217, 255, 0.34);
+    background: #02060d;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  canvas {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+
+  .hud {
+    border: 1px solid rgba(0, 217, 255, 0.34);
+    background: rgba(0,0,0,0.28);
+    padding: 14px;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  .hud h3 {
+    margin: 0 0 12px;
+    font-size: 16px;
+    color: #f2fcff;
+  }
+
+  .hud-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 8px 0;
+    font-size: 13px;
+  }
+
+  .hud-line span:first-child {
+    color: var(--muted);
+  }
+
+  .hud-line.cctv-line {
+    border-color: rgba(0, 217, 255, 0.22);
+    background: rgba(0, 217, 255, 0.055);
+    margin: 4px -4px;
+    padding: 9px 4px;
+  }
+
+  .hud-key-cctv {
+    color: var(--cyan2) !important;
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+  }
+
+  .hud-line.cctv-line strong {
+    font-size: 14px;
+    color: #f2fcff;
+  }
+
+  .hud-subtitle {
+    margin: 14px 0 4px;
+    color: var(--cyan2);
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    border-top: 1px solid rgba(0, 217, 255, 0.18);
+    padding-top: 12px;
+  }
+
+  .hud-line.affection-line strong {
+    color: #f2fcff;
+  }
+
+
+  .hint {
+    color: #96bcc9;
+    line-height: 1.55;
+    font-size: 12px;
+    margin: 12px 0;
+  }
+
+  .dialog {
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    bottom: 18px;
+    border: 1px solid rgba(0, 217, 255, 0.58);
+    background: rgba(2, 8, 16, 0.95);
+    box-shadow: 0 0 24px rgba(0, 217, 255, 0.16);
+    padding: 14px;
+    display: none;
+  }
+
+  .dialog.active {
+    display: block;
+  }
+
+  .dialog-name {
+    color: var(--cyan);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+  }
+
+  .dialog-text {
+    color: #e8f8ff;
+    line-height: 1.6;
+    font-size: 14px;
+    white-space: pre-line;
+  }
+
+  .choice-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+
+  .choice-row button {
+    border: 1px solid rgba(255,255,255,0.18);
+    color: #e8f8ff;
+    background: rgba(255,255,255,0.06);
+    padding: 7px 9px;
+    cursor: pointer;
+  }
+  .choice-row button:hover {
+    border-color: rgba(0,217,255,0.8);
+    color: var(--cyan2);
+  }
+
+  .dpad {
+    display: none;
+    grid-template-columns: repeat(3, 44px);
+    grid-template-rows: repeat(3, 44px);
+    gap: 6px;
+    justify-content: center;
+    margin-top: 12px;
+  }
+
+  .dpad button {
+    border: 1px solid rgba(0, 217, 255, 0.42);
+    background: rgba(0,0,0,0.3);
+    color: var(--cyan2);
+  }
+
+  .dpad .blank {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @media (max-width: 840px) {
+    body { overflow: auto; }
+    .shell { min-height: 100dvh; padding: 10px; }
+    .mission-window { height: auto; min-height: 94dvh; }
+    .content { min-height: 720px; }
+    .mission-grid { grid-template-columns: 1fr; }
+    .game-layout { grid-template-columns: 1fr; }
+    .hud { min-height: 260px; }
+    .dpad { display: grid; }
+  }
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+
+<div class="shell">
+  <section class="mission-window" aria-label="VOXTEK Mission Channel">
+    <header class="window-header">
+      <div class="window-title">
+        <div class="window-dot"></div>
+        <strong>VOXTEK MISSION CHANNEL</strong>
+        <span>secure mission line</span>
+      </div>
+      <div class="top-actions">
+        <button class="small-btn" id="btnBackTop">MISSION LIST</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="screen active" id="screenMenu">
+        <div class="mission-intro">
+          <div class="channel-top">
+            <div class="kicker">MISSION SELECTOR</div>
+            <h1>채널을 선택하십시오.</h1>
+            <p class="desc">
+              브로드캐스트처럼 채널 목록을 먼저 표시하고,
+              기존 생명체 관리 임무와 오늘의 업무를 분기하는 방식입니다.
+            </p>
+          </div>
+
+          <div class="mission-grid">
+            <button class="mission-card" id="btnEgg">
+              <div class="num">01 / EXISTING CHANNEL</div>
+              <h2>알키우기</h2>
+              <p>기존 생명체 관리 임무. 실제 사이트 적용 시 기존 조건과 기존 진행 데이터를 그대로 연결하면 됩니다.</p>
+              <div class="tag-row">
+                <span class="tag">기존 조건 유지</span>
+                <span class="tag">포인트 관리</span>
+                <span class="tag">생명체 등록</span>
+              </div>
+            </button>
+
+            <button class="mission-card" id="btnWork">
+              <div class="num">02 / NEW CHANNEL</div>
+              <h2>오늘의 업무</h2>
+              <p>복스테크 사내 로비에서 CCTV 기록을 확인하고 일일 업무 단말기에 보고하는 업무입니다.</p>
+              <div class="tag-row">
+                <span class="tag">32×32 TILE</span>
+                <span class="tag">GRID MOVE</span>
+                <span class="tag">DAILY QUEST</span>
+                <span class="tag">+10 SCORE</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screenEgg">
+        <div class="egg-panel">
+          <div class="kicker">EXISTING MISSION</div>
+          <h1>생명체 관리</h1>
+          <div class="egg-icon" aria-hidden="true"></div>
+          <p class="desc">
+            기존 생명체 관리 임무로 이동합니다.
+            입사 44일차, 공통 패스워드, 포인트, 생명체 등록, 관리 콘솔 조건은 그대로 유지됩니다.
+          </p>
+          <br>
+          <button class="small-btn" data-menu>채널로 돌아가기</button>
+        </div>
+      </section>
+
+      <section class="screen game-screen" id="screenGame">
+        <div class="game-layout">
+          <div class="game-box">
+            <canvas id="gameCanvas" width="960" height="640"></canvas>
+            <div class="dialog" id="dialogBox">
+              <div class="dialog-name" id="dialogName">SYSTEM</div>
+              <div class="dialog-text" id="dialogText">...</div>
+              <div class="choice-row" id="dialogChoices"></div>
+            </div>
+          </div>
+
+          <aside class="hud">
+            <h3>오늘의 업무</h3>
+            <div class="hud-line"><span>상태</span><strong id="hudState">대기 중</strong></div>
+            <div class="hud-line"><span>업무 지시</span><strong id="hudWork">미수신</strong></div>
+            <div class="hud-line"><span>좌표</span><strong id="hudPos">-</strong></div>
+            <div class="hud-line"><span>방향</span><strong id="hudFacing">아래</strong></div>
+            <div class="hud-line"><span>평가 반영</span><strong id="hudScore">0</strong></div>
+            <div class="hud-line cctv-line"><span class="hud-key-cctv">CCTV</span><strong id="hudCctv">미확인</strong></div>
+            <div class="hud-line"><span>일일 업무</span><strong id="hudQuest">미완료</strong></div>
+
+            <div class="hud-subtitle">AFFECTION LOG</div>
+            <div class="hud-line affection-line"><span>VELVET</span><strong id="hudAffVelvet">0</strong></div>
+            <div class="hud-line affection-line"><span>VALENTINO</span><strong id="hudAffValentino">0</strong></div>
+            <div class="hud-line affection-line"><span>VOX</span><strong id="hudAffVox">0</strong></div>
+
+            <p class="hint">
+              이동: 방향키 / WASD 길게 누르기<br>
+              상호작용: Space / Enter<br>
+            </p>
+
+
+            <div class="dpad" aria-label="mobile controls">
+              <button class="blank"></button><button data-dir="up">▲</button><button class="blank"></button>
+              <button data-dir="left">◀</button><button id="btnInteractMobile">●</button><button data-dir="right">▶</button>
+              <button class="blank"></button><button data-dir="down">▼</button><button class="blank"></button>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </section>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const ASSETS = {
+    tiles: "data:image/png;base64,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",
+    playerIdle: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAwCAYAAABwrHhvAAADb0lEQVR4nMVYzU5TQRg9g1QXUGjkQvhLCulSy6KaGFMXRBY1cWMwUZ6gT4BPwRv0CeABTNxoWEDcKAuJCxZESqQYeiUNty4U7Lho5zJ35puf3pJ4kpt2Zr75zvnmf4bBDe5hYwNLXQiAj09MpWbOjWZRrx9aeWwCvMlzo1m02hFyo1my3CbCJMBI7iIDQJabRAwZvRDEwqnqvNWONFtfeAkQDlWiNIQ+AhLNLzuX/5vEAMDYxLSWLpbKADGjvFqAIlOjFqRjE9O4+PlDS5tgFWDqc5lQQJAKMirdtwAT5ChdkctpCsMmEtPAoqKyRW4jBwwt0E//2iIXebYxQC1EPJ8vkFG40jbs7+2SnGoL8GKp7NWfcpSmSEV6f28XxVKZnIpqC/CZ+UUAwO1bQyS5cOyKWEV41gAAnH7/luA1zoI/fzve5KbIVXIKzmlIrWppbHwFsF4TaXBFacqToTa/lpDAAYhBMzBMM8AmIBYyM7+IYGo2FXF41iCj7kdALCINXOS+AoD0B1Onf+NeIGEjny/EiXr9EJzTehhjUGw3ALwZVMA6kFx6t7a2AABra2sAgM3NzUQFyXbdJSDVdnyTcM4CdSru7+3GXbD04AkA4Mvnna4zxlCtVvHx09eEvY3H2QWTYzk0L1pxulgqgzEGzjkeP7x3HYlCrtYzoa8ukAkBoFaroVarkbaZOyNePq03o0rlFQCg0TzRCqXVDQC9as5OzuHy9y982H5r5HJ2AUUuCKPzEACQvRsY685Ozln9m7qAF0vlBLkg84Fs22ieGO8ENgEJJ65dTgXnV4n6NvHkmXBl+RkA4PDoemvm/Mprn4/OQ3B+1XXOuj1cWOjuJe+332mc1llQWFiMK1cqK1r56fEBTo8PtHzGhsHYcKK+CZQA1lN6o6CiJzMkaIPm6fJzAEDzopWIfOn+ozg/Og9xdKS3ioPLCR4EAe+Jcn6SrRM+uyEAYGRkXMu75N0ezLCOZhuGftPWWwAlQlzbKXG++O/bsbcA1zXbVT6wAPnaTZG4ygcWIEjk337LKXgdy9U3Q/XVjHpFy7COmAlWDlcL8CAI8PrlC2RYJ/5VH61a7QitdpSwWV1dRRAEwIBvzbxarfIgCOJf8QHgAj2h8SfXcQlwHkp7UWgIwzA+nDLGYLOz8XiNATJTuZwwlo7jH4Eb0+OOEJyyAAAAAElFTkSuQmCC",
+    playerStepA: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAwCAYAAABwrHhvAAADeElEQVR4nK1YzU5TQRg9g1QXUGjsQPhLCulSy6KaGFMXRBY1cWNqojxBnwCfgjfoE8CGnYkbDQsbN8pC4oIFkRIphl5I5daFgh0X7Vzmzn9vOcnN7cx8853zzcw3c6cEbjAPGxtI4kYAbDI7nZg5M55Go3Fg5bEJ8CbPjKfR7oTIjKe17TYRJgFGchcZAG27ScSI0YuGmDuVnbc7oWLrCy8B3KFMlITQR0Bs+EXn4m+TGACYyM4o5UKxBGgyymsEdGRy1Jx0IjuDi7OfStkEqwDTnIuEHJyUk+nKAwswQYzSFblY1mHURGJaWLqobJHbyAHDCAwyv7bIeZ1tDeg2IpbL5bVRuMo27O3WtZzyCLBCseQ1n2KUpkh5eW+3jkKxpE1FeQTY7MISAOD2rREtOXfsilhGcNoEAJz8+B7jNWbB339db3JT5DK5Ds401O1qSWx8BZD+EClwRWmqEyEPv1IQwADwRTM0TBlgExAJmV1YAp2eS0QcnDa1UQ8iIBKRBC5yXwFA8g9Tp3/jWSBgI5fLR4VG4wCM6fUQQiDZbgB4M6yAdSC+9W5tbQEA1tbWAACbm5uxDoLtuktAouP4JuHMAjkV93br0RQsP3gCAPj65WPPGSGoVqv49PlbzN7G45yCqYkMWhftqFwolkAIAWMMjx/eu45EIpf7mTDQFIiEAFCr1VCr1bS2qTtjXj6tN6Ny+RUAoNk6VhqF3Q2Aftecm5rH5Z/f+LDz1sjlnAIdOScMzwMAQPouNfadm5q3+jdNASsUSzFyTuYD0bbZOjbeCWwCYk5cp5wMxq5i/W3itd+EqyvPAAAHh9dHM2NXXud8eB6Asauec9Kb4fxi7yx5v/NO4bRmQX5xKepcLq8q7SdH+zg52lfqCRkFIaOx/iboBJC+0huFLnpthQBl0TxdeQ4AaF20Y5Ev338U1YfnAQ4P1VFxcDnBKKWsL8r5CLZO+JyGAICxsUml7pL1ZlB3jQsCv7T1FqATYfuPwBc3dhy7bsFDC3ARiLfiYe4FRvgQuP6M0GGgNeAiENcEpRRBEDA40s9nBNhkdhrtThg9OuJ2J0SKdPH65QukSBeVSgWUUsCRji4BjFIaOeVvLuLX2SnpP0iRLgBge3sblUoleg8LVq1WGaU0evNHiizWZrFT4Pwo7Q+jgv5GI/Y3EQ19M0rk2Bf/Aaf41c7L9z2MAAAAAElFTkSuQmCC",
+    playerStepB: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAwCAYAAABwrHhvAAADZUlEQVR4nLVYzU5TQRg9g6CLUtrYoeEvKaRLLYtqYkxdEFnUxI2JifIEfQJ8Ct6gTwAPYOJGw8LGjbKQuGBBbIm0hl5JQ3GhIuOincv8z/QWT3JzO3O/+c75vvnrDIEfLMDGBZL4IwCWyeUTM2en02i1Dp08LgHB5NnpNHrnfWSn08bvLhE2AVZyHxkA43ebiAmrFwMxd6o67533NdtQBAngDlWiJIQhAqT0i87F3zYxADCTm9PKpXIFMMyooAyYyNSoOelMbg5nP75rZRucAmx9LhJycFJOZiqPLMAGMUpf5GLZhEkbiW1gmaJyRe4iBywZGKV/XZHzOtcYMC1ErFAoGqPwlV3Y32sYOdUMsFK5EtSfYpS2SHl5f6+BUrlinIpqBtj80goA4OaNCSM5d+yLWEV00gYAdL59lXits+D338tgclvkKrkJ3mloWtWS2IQKIMMUafBFaasToaZfKwhgAPigGRu2GeASEAuZX1oBzS8kIo5O2saoRxEQi0gCH3moACD5H1Ovf+teIGCrUCjGhVbrEIyZ9RBCoNhuAXg1roBNQF56d3Z2AAAbGxsAgO3tbamBYLvpE5BoO75OeGeBOhX39xpxF6zeewQA+Pzp/cAZIajVavjw8Ytk7+LxdsHsTBbds15cLpUrIISAMYaH9+9cRaKQq+1sGKkLREIAqNfrqNfrRtupW6kgn86TUbX6AgDQ7h5rH4XVDYB51VyYXcSfXz/xbve1lcvbBSZyTtg/jQAA6dvU2nZhdtHp39YFrFSuSOScLASibbt7bD0TuARITny7nArGLqT2LvHG/4Tra08AAIfNq62ZsYugfb5/GoGxi4FzMujh4vJgL3m7+0bjdM6C4vJK3LhaXde+d44O0Dk60OoJmQQhk1J7G0wCyFDptcIUvbFCgDZoHq89BQB0z3pS5Kt3H8T1/dMIzaaeFQ+XF4xSyoaivI9g60XIbggASKUySKUyUh0/NU+RS802isKmbbAAn7ikCN4LfKfc/y5APPW6zgajChxpN3RdNvgE2hAyBlgml5euaWx3B77bEBN8GWCUUrx8/gxT5DJ+2y6oeuf9+KGUAuNf84LVajVGKY3f/BGdZ3J5lsnlJTv+HleERGoToNqJInwCgk5GAW3ZMOUahgvSWEezUIQI1fAPic7O5us3kVIAAAAASUVORK5CYII="
+  };
+
+  const MAP_DATA = {"compressionlevel":-1,"height":20,"infinite":false,"layers":[{"data":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,11,11,11,11,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,11,11,11,11,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,11,11,11,11,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,11,11,11,11,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,11,11,11,11,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,11,11,11,11,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,11,11,11,11,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,11,11,11,11,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,11,11,11,11,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,11,11,11,11,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,11,11,11,11,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,11,11,11,11,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,11,11,11,11,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,11,11,11,11,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,11,11,11,11,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,11,11,11,11,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"height":20,"id":1,"name":"Floor","opacity":1,"type":"tilelayer","visible":true,"width":30,"x":0,"y":0},{"data":[4,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,3,3,3,3,3,3,3,3,3,3,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,4,12,12,0,0,0,0,12,12,4,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,4],"height":20,"id":2,"name":"Wall","opacity":1,"type":"tilelayer","visible":true,"width":30,"x":0,"y":0},{"data":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,10,10,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,9,0,0,0,0,0,0,0,0,0,8,8,0,0,0,0,0,0,0,0,0,15,15,0,0,0,0,0,0,16,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,5,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,7,7,0,0,0,0,0,0,0,6,0,7,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,19,0,0,0,0,0,0,0,0,0,18,18,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,18,18,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"height":20,"id":3,"name":"Furniture","opacity":1,"type":"tilelayer","visible":true,"width":30,"x":0,"y":0},{"data":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"height":20,"id":4,"name":"Decor","opacity":1,"type":"tilelayer","visible":true,"width":30,"x":0,"y":0},{"data":[13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,13,0,0,13,13,0,0,0,0,0,13,13,13,13,13,13,13,13,13,13,0,0,0,0,0,13,13,0,0,13,13,0,0,13,13,0,0,0,0,0,13,13,13,0,0,0,0,13,13,13,0,0,0,0,0,0,0,0,0,13,13,0,0,0,0,0,0,0,0,0,13,0,0,0,0,0,0,0,0,13,0,0,0,0,0,0,0,0,0,13,13,0,0,0,0,0,0,0,0,0,13,0,0,0,0,0,0,0,0,13,0,0,0,0,0,0,0,0,0,13,13,0,0,0,0,0,0,0,0,0,13,0,0,0,0,0,0,0,0,13,0,0,0,0,0,0,0,0,0,13,13,0,13,13,13,13,13,0,0,0,13,0,0,0,0,0,0,0,0,13,0,0,13,13,13,0,0,0,0,13,13,0,0,0,13,0,0,0,0,0,13,0,0,0,0,0,0,0,0,13,0,0,0,13,0,0,0,0,0,13,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,13,0,0,0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,0,0,0,13,13,0,0,0,0,13,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,13,0,0,0,0,13,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,13,0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,0,13,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13,13],"height":20,"id":5,"name":"Collision","opacity":0.35,"type":"tilelayer","visible":true,"width":30,"x":0,"y":0},{"draworder":"topdown","id":6,"name":"Objects","objects":[{"height":0,"id":1,"name":"player_spawn","point":true,"properties":[{"name":"role","type":"string","value":"spawn"}],"rotation":0,"type":"spawn","visible":true,"width":0,"x":496,"y":560},{"height":0,"id":2,"name":"npc_vox","point":true,"properties":[{"name":"npc_id","type":"string","value":"vox"},{"name":"dialogue_id","type":"string","value":"vox_lobby_intro"},{"name":"affection_target","type":"string","value":"vox"}],"rotation":0,"type":"npc","visible":true,"width":0,"x":496,"y":144},{"height":0,"id":3,"name":"npc_valentino","point":true,"properties":[{"name":"npc_id","type":"string","value":"valentino"},{"name":"dialogue_id","type":"string","value":"valentino_lounge"},{"name":"affection_target","type":"string","value":"valentino"}],"rotation":0,"type":"npc","visible":true,"width":0,"x":208,"y":400},{"height":0,"id":4,"name":"npc_velvet","point":true,"properties":[{"name":"npc_id","type":"string","value":"velvet"},{"name":"dialogue_id","type":"string","value":"velvet_terminal"},{"name":"affection_target","type":"string","value":"velvet"}],"rotation":0,"type":"npc","visible":true,"width":0,"x":784,"y":400},{"height":32,"id":5,"name":"quest_terminal","properties":[{"name":"quest_id","type":"string","value":"daily_cctv_report"},{"name":"score","type":"int","value":4},{"name":"label","type":"string","value":"일일 임무 단말기"}],"rotation":0,"type":"quest","visible":true,"width":32,"x":736,"y":224},{"height":32,"id":6,"name":"door_ceo_office","properties":[{"name":"target_map","type":"string","value":"ceo_office"},{"name":"locked","type":"bool","value":true},{"name":"message","type":"string","value":"대표 승인 없는 접근은 기록됩니다."}],"rotation":0,"type":"door","visible":true,"width":64,"x":448,"y":64},{"height":32,"id":7,"name":"cctv_console","properties":[{"name":"interaction","type":"string","value":"cctv_log_check"},{"name":"label","type":"string","value":"CCTV 확인"}],"rotation":0,"type":"interaction","visible":true,"width":64,"x":96,"y":64}],"opacity":1,"type":"objectgroup","visible":true,"x":0,"y":0}],"nextlayerid":7,"nextobjectid":8,"orientation":"orthogonal","renderorder":"right-down","tiledversion":"1.11.2","tileheight":32,"tilesets":[{"columns":8,"firstgid":1,"image":"../tilesets/voxtek_office_tiles.png","imageheight":128,"imagewidth":256,"margin":0,"name":"voxtek_office_tiles","spacing":0,"tilecount":32,"tileheight":32,"tilewidth":32}],"tilewidth":32,"type":"map","version":"1.10","width":30};
+
+  const TILE = 32;
+  const SPRITE_W = 32;
+  const SPRITE_H = 48;
+  const MOVE_MS = 130;
+  const CAMERA_ZOOM = 2.0;
+  const WORLD_W = MAP_DATA.width * TILE;
+  const WORLD_H = MAP_DATA.height * TILE;
+
+  const $ = (id) => document.getElementById(id);
+
+  const screens = {
+    menu: $("screenMenu"),
+    egg: $("screenEgg"),
+    game: $("screenGame")
+  };
+
+  function showScreen(name) {
+    Object.values(screens).forEach(s => s.classList.remove("active"));
+    screens[name].classList.add("active");
+    if (name === "game") game.start();
+  }
+
+  $("btnEgg").addEventListener("click", () => showScreen("egg"));
+  $("btnWork").addEventListener("click", () => showScreen("game"));
+  $("btnBackTop").addEventListener("click", () => {
+    closeDialog();
+    showScreen("menu");
+  });
+  document.querySelectorAll("[data-menu]").forEach(btn => btn.addEventListener("click", () => showScreen("menu")));
+
+  function loadImage(src) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+  }
+
+  function layerByName(name) {
+    return MAP_DATA.layers.find(layer => layer.name === name);
+  }
+
+  function gidToSource(gid) {
+    if (!gid) return null;
+    const ts = MAP_DATA.tilesets[0];
+    const local = gid - ts.firstgid;
+    return {
+      sx: (local % ts.columns) * ts.tilewidth,
+      sy: Math.floor(local / ts.columns) * ts.tileheight,
+      sw: ts.tilewidth,
+      sh: ts.tileheight
+    };
+  }
+
+  function todayKey() {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+
+  const STORAGE_PREFIX = "voxtek_today_work_v1";
+  const AFFECTION_PREFIX = "voxtek_affection_v1";
+
+  function storageKey(name) {
+    return `${STORAGE_PREFIX}_${todayKey()}_${name}`;
+  }
+
+  function affectionKey(npc) {
+    return `${AFFECTION_PREFIX}_${npc}`;
+  }
+
+  function notifyParentDailyWorkCompleted() {
+    const payload = {
+      type: "VOXTEK_TODAY_WORK_COMPLETED",
+      questId: "daily_cctv_report",
+      scoreGain: 10,
+      completedAt: new Date().toISOString(),
+      localDate: todayKey()
+    };
+    try {
+      window.parent.postMessage(payload, window.location.origin);
+    } catch (error) {}
+  }
+
+  function playerDisplayName() {
+    try {
+      const employee = JSON.parse(localStorage.getItem("voxtek_employee_v1") || "null");
+      if (employee && employee.name) return String(employee.name).trim();
+    } catch (error) {}
+    const keys = ["voxtek_player_name", "voxtek_username", "player_name", "nickname", "employee_name"];
+    for (const key of keys) {
+      const value = localStorage.getItem(key);
+      if (value && value.trim()) return value.trim();
+    }
+    return "사원";
+  }
+
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  const NPC_META = {
+    velvet: {
+      title: "VELVET",
+      special: (name) => `${name}, 맞지? 이제 네 이름 정도는 기억해. 축하해, 존재감이 생겼다는 뜻이야.`
+    },
+    valentino: {
+      title: "VALENTINO",
+      special: (name) => `오, ${name}. 이제 이름까지 외웠네. 계속 눈에 띄면… 한 번쯤은 내 화면 안에 넣어줄지도 모르지.`
+    },
+    vox: {
+      title: "VOX",
+      special: (name) => `…${name}. 그래, 네 이름은 기억해두지. 자주 보이는 데이터는 오래 남는 법이니까.`
+    }
+  };
+
+  const TILE_DESCRIPTIONS = {
+    2: {
+      name: "LIGHT LINE",
+      text: "복스테크식 동선 표시등이다. 보기엔 멋지지만, 여기서 멍하니 서 있으라고 깔아둔 건 아닙니다."
+    },
+    3: {
+      name: "WALL",
+      text: "차갑게 정돈된 사내 벽면이다. 반짝이는 선 하나까지 감시받는 기분이 듭니다."
+    },
+    4: {
+      name: "WALL",
+      text: "복스테크 내부 벽면이다. 통과하려 하지 마십시오. 흔적은 남고, 변명은 지워집니다."
+    },
+    5: {
+      name: "DESK",
+      text: "정돈된 사내 책상이다. 서류 하나 삐뚤어진 곳 없이 관리되어 있습니다. 네 업무도 그 정도였으면 좋겠군요."
+    },
+    6: {
+      name: "WORKSTATION",
+      text: "업무용 컴퓨터다. 현재 잠겨 있습니다. 승인 없는 접근은 로그에 남습니다."
+    },
+    7: {
+      name: "MONITOR",
+      text: "사내 모니터다. 대기 화면만 떠 있지만, 시선은 이쪽을 보고 있는 것 같습니다."
+    },
+    8: {
+      name: "CEO PANEL",
+      text: "대표 권한 패널이다. 접근 권한이 없습니다. 굳이 손댔다간 이름보다 로그가 먼저 남을 겁니다."
+    },
+    9: {
+      name: "CCTV MONITOR",
+      text: "CCTV 모니터다. 붉은 점멸 표시가 기록 확인을 재촉하고 있습니다."
+    },
+    10: {
+      name: "VOXTEK SIGN",
+      text: "VOXTEK 로고 패널이다. Trust us. 네 업무도 믿을 만하면 좋겠군요."
+    },
+    11: {
+      name: "MAIN WALKWAY",
+      text: "중앙 통로다. 발걸음이 울릴 만큼 깨끗하게 관리되어 있습니다. 꾸물거리는 소리도 잘 들리겠군요."
+    },
+    12: {
+      name: "GLASS PANEL",
+      text: "유리 패널이다. 반사된 네 모습이 꽤 초라해 보입니다. 업무를 끝내면 조금 나아질지도 모릅니다."
+    },
+    14: {
+      name: "PLANT",
+      text: "관상용 식물이다. 유일하게 일을 안 해도 살아남는 직원처럼 보입니다. 부럽습니까?"
+    },
+    15: {
+      name: "FILE CABINET",
+      text: "사내 자료 캐비닛이다. 잠겨 있습니다. 필요한 자료라면 정식 요청부터 하십시오."
+    },
+    16: {
+      name: "SERVER RACK",
+      text: "서버 랙이다. 낮은 기계음이 계속 이어집니다. 괜히 건드렸다간 네 평가가 먼저 꺼질 겁니다."
+    },
+    17: {
+      name: "ERROR PANEL",
+      text: "오류 패널이다. 누군가의 실수가 아직 화면에 남아 있습니다. 네 이름은 없기를 바랍니다."
+    },
+    18: {
+      name: "SOFA",
+      text: "잠시 쉴 수 있는 소파이다. 하지만 업무 시간에 앉아 있을 생각은 아니겠지?"
+    },
+    19: {
+      name: "V PANEL",
+      text: "V 표시가 켜진 패널이다. 단순 장식인지 경고인지, 굳이 시험할 필요는 없습니다."
+    },
+    20: {
+      name: "VAL PANEL",
+      text: "VAL 표시가 있는 패널이다. 근처에 오래 서 있으면 괜히 시선이 달라붙는 기분입니다."
+    }
+  };
+
+  const NPC_DIALOGUES = JSON.parse("{\"velvet\": [{\"prompt\": \"벨벳이 헬폰 화면에서 시선을 떼지 않은 채 너를 훑어본다.\n\\"오늘 사내 피드 반응 봤어? 대답 잘못하면 바로 촌스러운 쪽으로 분류할 거야.\\"\", \"choices\": [{\"label\": \"핵심 반응만 정리해서 올리겠습니다.\", \"delta\": 1, \"response\": \"오, 말은 좀 되네. 쓸데없는 감상문보다 훨씬 낫다.\"}, {\"label\": \"아직 확인 중입니다.\", \"delta\": 0, \"response\": \"평범해. 적어도 거짓말은 안 했네.\"}, {\"label\": \"그런 건 홍보팀 일이잖아요.\", \"delta\": -1, \"response\": \"와. 방금 네 존재감이 구려졌어.\"}]}, {\"prompt\": \"벨벳이 네 명찰을 슬쩍 보고 웃는다.\n\\"너, 복스테크 분위기에 맞는다고 생각해?\\"\", \"choices\": [{\"label\": \"맞춰가고 있습니다. 결과로 보이겠습니다.\", \"delta\": 1, \"response\": \"좋아. 말만 번지르르한 애들보단 낫네.\"}, {\"label\": \"아직 잘 모르겠습니다.\", \"delta\": 0, \"response\": \"정직하긴 하네. 재미는 없지만.\"}, {\"label\": \"굳이 맞춰야 하나요?\", \"delta\": -1, \"response\": \"응, 그럼 여기 왜 있어?\"}]}, {\"prompt\": \"벨벳이 벽면 모니터를 가리킨다.\n\\"저 화면, 너무 심심하지 않아?\\"\", \"choices\": [{\"label\": \"정보가 먼저 보이게 정리하겠습니다.\", \"delta\": 1, \"response\": \"오케이. 보기 좋은데 쓸모도 있는 방향. 마음에 들어.\"}, {\"label\": \"조금 어두워 보이긴 합니다.\", \"delta\": 0, \"response\": \"그 정도는 누구나 말할 수 있지.\"}, {\"label\": \"저는 괜찮은데요.\", \"delta\": -1, \"response\": \"그 미감으로는 의견 내지 마.\"}]}, {\"prompt\": \"벨벳이 빠르게 메시지를 넘기며 묻는다.\n\\"사내 평판 관리에서 제일 중요한 게 뭔데?\\"\", \"choices\": [{\"label\": \"속도, 이미지, 그리고 실수 감추기입니다.\", \"delta\": 1, \"response\": \"정답에 가까워. 특히 마지막, 아주 중요하지.\"}, {\"label\": \"문제 생기면 보고하는 겁니다.\", \"delta\": 0, \"response\": \"교과서 답변. 재미없지만 틀리진 않아.\"}, {\"label\": \"진실을 알리는 거 아닌가요?\", \"delta\": -1, \"response\": \"아, 순진한 척이야? 진짜야? 둘 다 별론데.\"}]}, {\"prompt\": \"벨벳이 네 옷차림을 보고 한숨을 쉰다.\n\\"복스테크 직원이면 최소한 화면에는 살아남아야지.\\"\", \"choices\": [{\"label\": \"다음 근무부터 색감 맞추겠습니다.\", \"delta\": 1, \"response\": \"좋아. 개선 가능성은 있네.\"}, {\"label\": \"규정 복장입니다.\", \"delta\": 0, \"response\": \"규정은 최소치야. 기억해.\"}, {\"label\": \"불편한 건 싫습니다.\", \"delta\": -1, \"response\": \"그럼 보는 내가 불편한 건?\"}]}, {\"prompt\": \"벨벳이 낮게 웃는다.\n\\"오늘 네 업무, 사람들한테 보여줘도 안 부끄러울 수준이야?\\"\", \"choices\": [{\"label\": \"검수 후 공개해도 되는 수준으로 맞추겠습니다.\", \"delta\": 1, \"response\": \"그 정도면 써먹을 수 있겠네.\"}, {\"label\": \"아직 마무리 중입니다.\", \"delta\": 0, \"response\": \"그럼 마무리나 해.\"}, {\"label\": \"누가 보든 상관없습니다.\", \"delta\": -1, \"response\": \"그 태도, 진짜 위험하게 촌스러워.\"}]}, {\"prompt\": \"벨벳이 사내 공지 초안을 띄운다.\n\\"문구 하나만 바꾼다면?\\"\", \"choices\": [{\"label\": \"명령형을 유지하되 핵심 보상을 앞에 두겠습니다.\", \"delta\": 1, \"response\": \"오. 너 방금 꽤 괜찮았어.\"}, {\"label\": \"조금 더 부드럽게 바꿉니다.\", \"delta\": 0, \"response\": \"틀리진 않지만 복스테크답진 않아.\"}, {\"label\": \"공지문은 길수록 자세해서 좋습니다.\", \"delta\": -1, \"response\": \"길기만 한 건 죄야.\"}]}, {\"prompt\": \"벨벳이 너를 보며 손가락으로 작은 프레임을 만든다.\n\\"너 홍보 이미지에 넣으면 클릭률 나올까?\\"\", \"choices\": [{\"label\": \"클릭률보다 신뢰도를 올리겠습니다.\", \"delta\": 1, \"response\": \"호오. 적어도 버릴 답은 아니네.\"}, {\"label\": \"잘 모르겠습니다.\", \"delta\": 0, \"response\": \"그럴 줄 알았어.\"}, {\"label\": \"제가 메인 모델이 되겠습니다.\", \"delta\": -1, \"response\": \"자신감이랑 착각은 한 픽셀 차이야.\"}]}, {\"prompt\": \"벨벳이 모니터 속 랭킹을 넘기다 묻는다.\n\\"순위 올리고 싶으면 뭘 해야 하는지 알아?\\"\", \"choices\": [{\"label\": \"매일 기록을 남기고 성과를 누적하겠습니다.\", \"delta\": 1, \"response\": \"좋아. 드디어 시스템을 이해했네.\"}, {\"label\": \"운이 좋아야 합니다.\", \"delta\": 0, \"response\": \"운도 실력인 척 포장하면 쓸모는 있지.\"}, {\"label\": \"사람들 눈에 띄면 되죠.\", \"delta\": -1, \"response\": \"눈에 띄는 쓰레기는 그냥 빨리 치워져.\"}]}, {\"prompt\": \"벨벳이 짧게 묻는다.\n\\"복스테크에서 살아남는 법, 하나만 말해 봐.\\"\", \"choices\": [{\"label\": \"쓸모를 숫자로 증명하는 겁니다.\", \"delta\": 1, \"response\": \"깔끔해. 그 답은 꽤 마음에 들어.\"}, {\"label\": \"상사 눈치를 보는 겁니다.\", \"delta\": 0, \"response\": \"현실적이네. 예쁘진 않지만.\"}, {\"label\": \"적당히 버티는 겁니다.\", \"delta\": -1, \"response\": \"적당히 버틴 애들은 적당히 사라져.\"}]}], \"valentino\": [{\"prompt\": \"발렌티노가 서류 더미를 힐끗 보더니 노골적으로 흥미를 잃는다.\n\\"이런 종이 냄새 나는 일은 복스 취향이지. 넌 뭐가 좀 살아 있긴 해?\\"\", \"choices\": [{\"label\": \"서류보다 결과가 눈에 띄게 만들겠습니다.\", \"delta\": 1, \"response\": \"흐응. 좋아. 적어도 지루하게 죽진 않겠네.\"}, {\"label\": \"맡은 일은 처리하겠습니다.\", \"delta\": 0, \"response\": \"착하긴 한데, 너무 얌전해. 졸릴 정도로.\"}, {\"label\": \"전 서류 업무가 더 편합니다.\", \"delta\": -1, \"response\": \"으, 그 말만으로도 재미없어졌어.\"}]}, {\"prompt\": \"발렌티노가 담배 연기를 길게 흘리며 너를 내려다본다.\n\\"보고? 숫자? 체크리스트? 자기야, 난 그런 거 들으면 하품 나와.\\"\", \"choices\": [{\"label\": \"그럼 한 줄로 끝내겠습니다. 문제없고, 처리됐습니다.\", \"delta\": 1, \"response\": \"오, 그건 마음에 드네. 짧고, 기분 안 잡치고.\"}, {\"label\": \"그래도 필요한 절차입니다.\", \"delta\": 0, \"response\": \"필요한 건 알겠는데, 내 기분까지 필요하진 않지.\"}, {\"label\": \"관심 없으시면 안 들으셔도 됩니다.\", \"delta\": -1, \"response\": \"방금 좀 건방졌어. 귀엽진 않고.\"}]}, {\"prompt\": \"발렌티노가 네 주변을 천천히 한 바퀴 보듯 시선을 움직인다.\n\\"복스테크 사원이라면서 왜 그렇게 뻣뻣해? 카메라 앞에 세우면 그대로 굳겠네.\\"\", \"choices\": [{\"label\": \"필요하면 화면에 맞춰 움직이겠습니다.\", \"delta\": 1, \"response\": \"그래, 그 말이 훨씬 낫다. 고장 난 장식품보단 쓸 만하네.\"}, {\"label\": \"긴장한 건 아닙니다.\", \"delta\": 0, \"response\": \"아닌 척하는 건 다들 잘해. 진짜인지가 문제지.\"}, {\"label\": \"업무에 카메라는 필요 없습니다.\", \"delta\": -1, \"response\": \"여긴 지옥이야, 자기야. 뭐든 카메라가 필요해질 수 있어.\"}]}, {\"prompt\": \"발렌티노가 손가락으로 책상을 톡톡 두드린다. 리듬은 느린데, 눈빛은 금방이라도 질릴 것 같다.\n\\"나 기다리는 거 싫어해. 알아들었지?\\"\", \"choices\": [{\"label\": \"기다리게 하지 않겠습니다. 바로 움직이겠습니다.\", \"delta\": 1, \"response\": \"좋아. 말보다 빠른 발이 예쁘지.\"}, {\"label\": \"최대한 빨리 하겠습니다.\", \"delta\": 0, \"response\": \"최대한이라는 말, 참 빠져나가기 좋지.\"}, {\"label\": \"제 순서대로 처리하겠습니다.\", \"delta\": -1, \"response\": \"네 순서? 그게 내 기분보다 중요해 보여?\"}]}, {\"prompt\": \"발렌티노가 선글라스를 살짝 내리며 웃는다.\n\\"복스가 또 뭘 복잡하게 시켰어? 천천히 말해봐. 아니, 그냥 재밌는 부분만.\\"\", \"choices\": [{\"label\": \"CCTV 기록에서 이상 신호만 골라 보고하겠습니다.\", \"delta\": 1, \"response\": \"그래. 지루한 건 잘라내고, 찝찝한 것만 가져와.\"}, {\"label\": \"업무 내용은 단순합니다.\", \"delta\": 0, \"response\": \"단순하면 좋지. 단순한데 재미없으면 문제고.\"}, {\"label\": \"복스님 지시라 자세히 말씀드릴 수 없습니다.\", \"delta\": -1, \"response\": \"아, 충성스러운 척. 귀엽지도 않아.\"}]}, {\"prompt\": \"발렌티노가 네 명찰을 보더니, 금방 시선을 떼고 웃는다.\n\\"이름은 아직 외울 필요 없겠네. 네가 좀 더 눈에 띄면 생각해볼게.\\"\", \"choices\": [{\"label\": \"기록으로 먼저 기억에 남겠습니다.\", \"delta\": 1, \"response\": \"호오. 그래, 그 정도 자신감은 나쁘지 않아.\"}, {\"label\": \"언젠가는 외우시게 될 겁니다.\", \"delta\": 0, \"response\": \"언젠가라. 너무 멀면 내가 먼저 질려.\"}, {\"label\": \"굳이 기억하실 필요 없습니다.\", \"delta\": -1, \"response\": \"그럼 정말 그렇게 해줄까?\"}]}, {\"prompt\": \"발렌티노가 옷깃의 먼지를 털며 중얼거린다.\n\\"칙칙한 직원은 싫어. 보고서든 사람이든, 보기 좋은 게 먼저야.\\"\", \"choices\": [{\"label\": \"보기 좋고 빠르게 읽히게 정리하겠습니다.\", \"delta\": 1, \"response\": \"그래. 이제야 말이 좀 통하네.\"}, {\"label\": \"내용이 더 중요하다고 생각합니다.\", \"delta\": 0, \"response\": \"틀린 말은 아닌데, 너무 복스 같아.\"}, {\"label\": \"외형은 중요하지 않습니다.\", \"delta\": -1, \"response\": \"끔찍해. 방금 그 대답이 제일 못생겼어.\"}]}, {\"prompt\": \"발렌티노가 느긋하게 웃는다. 웃고 있는데도 묘하게 위험하다.\n\\"내가 기분 나빠지면, 주변 일이 아주 시끄러워져. 넌 조용한 게 좋아?\\"\", \"choices\": [{\"label\": \"조용히 끝내겠습니다. 문제 없이요.\", \"delta\": 1, \"response\": \"좋아. 조용하고 빠른 애들은 오래 써먹기 좋지.\"}, {\"label\": \"상황에 따라 다릅니다.\", \"delta\": 0, \"response\": \"그런 대답은 안전하지만, 별로 맛은 없어.\"}, {\"label\": \"시끄러워져도 상관없습니다.\", \"delta\": -1, \"response\": \"상관없다? 그 말, 네가 감당할 수 있을 때만 해.\"}]}, {\"prompt\": \"발렌티노가 모니터에 뜬 평가 점수를 보고 피식 웃는다.\n\\"숫자 놀이로 승진하고 싶어? 참 복스테크답네.\\"\", \"choices\": [{\"label\": \"숫자도, 눈에 띄는 결과도 둘 다 챙기겠습니다.\", \"delta\": 1, \"response\": \"음, 욕심 있는 대답. 마음에 들어.\"}, {\"label\": \"평가 기준이니 따르겠습니다.\", \"delta\": 0, \"response\": \"얌전해. 너무 얌전해서 씹는 맛이 없어.\"}, {\"label\": \"점수에는 관심 없습니다.\", \"delta\": -1, \"response\": \"관심 없는 척하는 애들이 제일 먼저 밀려나.\"}]}, {\"prompt\": \"발렌티노가 턱을 괴고 너를 바라본다.\n\\"자기야, 넌 명령을 잘 듣는 타입이야, 아니면 시선을 끄는 타입이야?\\"\", \"choices\": [{\"label\": \"명령을 끝낸 뒤 시선을 끌겠습니다.\", \"delta\": 1, \"response\": \"오. 순서까지 아네. 그건 꽤 마음에 들어.\"}, {\"label\": \"필요한 쪽에 맞추겠습니다.\", \"delta\": 0, \"response\": \"무난해. 무난한 애들은 오래 가기도 하지.\"}, {\"label\": \"둘 다 제 방식대로 합니다.\", \"delta\": -1, \"response\": \"그 방식이 마음에 안 들면?\"}]}], \"vox\": [{\"prompt\": \"복스가 화면 너머로 너를 훑어본다.\n\\"오늘 네 업무가 내 시스템에 남을 가치가 있다고 생각하나?\\"\", \"choices\": [{\"label\": \"기록으로 증명하겠습니다.\", \"delta\": 1, \"response\": \"좋아. 말보다 로그가 정확하지.\"}, {\"label\": \"아직은 모르겠습니다.\", \"delta\": 0, \"response\": \"정직하군. 유용하진 않지만.\"}, {\"label\": \"그 정도는 당연합니다.\", \"delta\": -1, \"response\": \"당연하다는 말은 실적 없는 놈들이 좋아하지.\"}]}, {\"prompt\": \"복스가 짧게 묻는다.\n\\"CCTV 기록에서 제일 먼저 볼 건?\\"\", \"choices\": [{\"label\": \"시간, 접근 위치, 예외 로그입니다.\", \"delta\": 1, \"response\": \"정답에 가깝군. 드물게 쓸모 있어.\"}, {\"label\": \"이상한 부분부터 봅니다.\", \"delta\": 0, \"response\": \"두루뭉술하지만 틀리진 않아.\"}, {\"label\": \"눈에 띄는 것부터 봅니다.\", \"delta\": -1, \"response\": \"눈에 띄는 것만 보는 직원은 눈에 띄게 무능하지.\"}]}, {\"prompt\": \"복스가 팔짱을 낀 채 말한다.\n\\"보고가 늦어진 이유를 묻는다면?\\"\", \"choices\": [{\"label\": \"원인과 복구 시간을 함께 보고합니다.\", \"delta\": 1, \"response\": \"그래. 변명보다 수치가 낫지.\"}, {\"label\": \"죄송하다고 먼저 말합니다.\", \"delta\": 0, \"response\": \"기본은 하네.\"}, {\"label\": \"어쩔 수 없었다고 합니다.\", \"delta\": -1, \"response\": \"어쩔 수 없다는 말은 무능의 포장지야.\"}]}, {\"prompt\": \"복스의 화면에 네 이름 없는 기록이 떠오른다.\n\\"기록에 이름을 남기고 싶나?\\"\", \"choices\": [{\"label\": \"성과가 먼저 남도록 하겠습니다.\", \"delta\": 1, \"response\": \"좋아. 순서를 알고 있군.\"}, {\"label\": \"가능하다면요.\", \"delta\": 0, \"response\": \"가능성은 관심 없어. 결과를 가져와.\"}, {\"label\": \"이미 충분히 남겼습니다.\", \"delta\": -1, \"response\": \"내가 모르는 기록은 기록이 아니야.\"}]}, {\"prompt\": \"복스가 낮은 목소리로 말한다.\n\\"내 시간을 낭비하지 않는 법을 아나?\\"\", \"choices\": [{\"label\": \"결론, 근거, 조치 순서로 보고합니다.\", \"delta\": 1, \"response\": \"그 정도면 내 화면에 띄울 가치는 있겠군.\"}, {\"label\": \"짧게 말합니다.\", \"delta\": 0, \"response\": \"짧기만 해선 부족해.\"}, {\"label\": \"최대한 자주 보고합니다.\", \"delta\": -1, \"response\": \"알림을 스팸으로 만드는 재능이 있나?\"}]}, {\"prompt\": \"복스가 네 쪽으로 시선을 고정한다.\n\\"복스테크에서 충성은 뭘로 증명하지?\\"\", \"choices\": [{\"label\": \"성과와 재발 방지 기록입니다.\", \"delta\": 1, \"response\": \"좋아. 감정은 꺼지고 데이터는 남지.\"}, {\"label\": \"태도라고 생각합니다.\", \"delta\": 0, \"response\": \"태도는 포장이고, 성과가 내용물이다.\"}, {\"label\": \"말로 충분하지 않습니까?\", \"delta\": -1, \"response\": \"말은 송출되면 끝이지만, 기록은 남는다.\"}]}, {\"prompt\": \"복스가 화면을 깜박인다.\n\\"네가 오늘 하나만 개선한다면?\\"\", \"choices\": [{\"label\": \"보고 동선을 줄이겠습니다.\", \"delta\": 1, \"response\": \"효율을 말하는군. 마음에 들어.\"}, {\"label\": \"실수를 줄이겠습니다.\", \"delta\": 0, \"response\": \"당연한 말을 했군.\"}, {\"label\": \"크게 바꿀 건 없습니다.\", \"delta\": -1, \"response\": \"개선점이 안 보이는 직원이 제일 문제야.\"}]}, {\"prompt\": \"복스가 모니터를 두드린다.\n\\"화면에 뜬 숫자가 마음에 들지 않으면?\\"\", \"choices\": [{\"label\": \"원인 데이터를 확인하고 즉시 수정안을 올립니다.\", \"delta\": 1, \"response\": \"그게 정답이지. 숫자는 기분으로 고치는 게 아니야.\"}, {\"label\": \"다시 확인합니다.\", \"delta\": 0, \"response\": \"최소한의 반응이군.\"}, {\"label\": \"보는 사람에 따라 다르다고 합니다.\", \"delta\": -1, \"response\": \"숫자 앞에서 취향을 말하는 놈은 필요 없어.\"}]}, {\"prompt\": \"복스가 냉소적으로 웃는다.\n\\"이 회사에서 네 가치는 누가 정하지?\\"\", \"choices\": [{\"label\": \"기록과 대표님의 판단입니다.\", \"delta\": 1, \"response\": \"좋아. 구조를 이해했군.\"}, {\"label\": \"제가 만든 성과입니다.\", \"delta\": 0, \"response\": \"나쁘진 않아. 다만 검수는 내가 하지.\"}, {\"label\": \"동료들의 평가입니다.\", \"delta\": -1, \"response\": \"대중의 소음과 평가는 구분해라.\"}]}, {\"prompt\": \"복스가 마지막으로 묻는다.\n\\"내가 네 이름을 기억해야 할 이유가 있나?\\"\", \"choices\": [{\"label\": \"곧 기록으로 남기겠습니다.\", \"delta\": 1, \"response\": \"좋아. 그럼 기록을 만들어.\"}, {\"label\": \"아직은 없습니다.\", \"delta\": 0, \"response\": \"정직하군. 당장은 그뿐이지만.\"}, {\"label\": \"이미 기억하셔야 하는 거 아닌가요?\", \"delta\": -1, \"response\": \"착각은 데이터보다 빨리 삭제된다.\"}]}]}");
+
+  const dialog = {
+    box: $("dialogBox"),
+    name: $("dialogName"),
+    text: $("dialogText"),
+    choices: $("dialogChoices")
+  };
+
+  function showDialog(name, text, choices = []) {
+    dialog.name.textContent = name;
+    dialog.text.textContent = text;
+    dialog.choices.innerHTML = "";
+    choices.forEach(choice => {
+      const btn = document.createElement("button");
+      btn.textContent = choice.label;
+      btn.addEventListener("click", choice.onClick);
+      dialog.choices.appendChild(btn);
+    });
+    if (!choices.length) {
+      const btn = document.createElement("button");
+      btn.textContent = "닫기";
+      btn.addEventListener("click", closeDialog);
+      dialog.choices.appendChild(btn);
+    }
+    dialog.box.classList.add("active");
+  }
+
+  function closeDialog() {
+    dialog.box.classList.remove("active");
+  }
+
+  const keyDirectionMap = {
+    arrowup: "up", w: "up",
+    arrowdown: "down", s: "down",
+    arrowleft: "left", a: "left",
+    arrowright: "right", d: "right"
+  };
+  const heldDirections = new Set();
+  let activeHeldDirection = null;
+
+  function clearHeldDirections() {
+    heldDirections.clear();
+    activeHeldDirection = null;
+  }
+
+  const game = {
+    started: false,
+    ready: false,
+    canvas: $("gameCanvas"),
+    ctx: $("gameCanvas").getContext("2d"),
+    images: {},
+    player: {
+      gx: 15,
+      gy: 17,
+      x: 15 * TILE + TILE / 2,
+      y: 17 * TILE + TILE / 2,
+      tx: 15 * TILE + TILE / 2,
+      ty: 17 * TILE + TILE / 2,
+      fromX: 15 * TILE + TILE / 2,
+      fromY: 17 * TILE + TILE / 2,
+      moving: false,
+      moveStart: 0,
+      facing: "down",
+      step: 0
+    },
+    debugCollision: false,
+
+    async start() {
+      if (this.started) return;
+      this.started = true;
+
+      const objects = layerByName("Objects")?.objects || [];
+      const spawn = objects.find(o => o.name === "player_spawn");
+      if (spawn) {
+        this.player.gx = Math.floor(spawn.x / TILE);
+        this.player.gy = Math.floor(spawn.y / TILE);
+        this.player.x = this.player.gx * TILE + TILE / 2;
+        this.player.y = this.player.gy * TILE + TILE / 2;
+        this.player.tx = this.player.x;
+        this.player.ty = this.player.y;
+        this.player.fromX = this.player.x;
+        this.player.fromY = this.player.y;
+      }
+
+      this.images.tiles = await loadImage(ASSETS.tiles);
+      this.images.playerIdle = await loadImage(ASSETS.playerIdle);
+      this.images.playerStepA = await loadImage(ASSETS.playerStepA);
+      this.images.playerStepB = await loadImage(ASSETS.playerStepB);
+
+      this.ready = true;
+      this.refreshHud();
+      requestAnimationFrame(this.loop.bind(this));
+    },
+
+    loop(now) {
+      this.update(now);
+      this.draw();
+      requestAnimationFrame(this.loop.bind(this));
+    },
+
+    update(now) {
+      if (!this.player.moving) {
+        if (this.ready && screens.game.classList.contains("active") && !dialog.box.classList.contains("active") && activeHeldDirection && heldDirections.has(activeHeldDirection)) {
+          this.tryMove(activeHeldDirection);
+        }
+        return;
+      }
+      const t = Math.min(1, (now - this.player.moveStart) / MOVE_MS);
+      const eased = t;
+      this.player.x = this.player.fromX + (this.player.tx - this.player.fromX) * eased;
+      this.player.y = this.player.fromY + (this.player.ty - this.player.fromY) * eased;
+      if (t >= 1) {
+        this.player.x = this.player.tx;
+        this.player.y = this.player.ty;
+        this.player.moving = false;
+        this.refreshHud();
+      }
+    },
+
+    draw() {
+      const ctx = this.ctx;
+      ctx.imageSmoothingEnabled = false;
+      ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      ctx.fillStyle = "#02060d";
+      ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+      if (!this.ready) {
+        ctx.fillStyle = "#00d9ff";
+        ctx.font = "16px monospace";
+        ctx.fillText("VOXTEK TASK PROGRAM LOADING...", 32, 48);
+        return;
+      }
+
+      const cam = this.getCamera();
+      ctx.save();
+      ctx.scale(CAMERA_ZOOM, CAMERA_ZOOM);
+      ctx.translate(-cam.x, -cam.y);
+
+      this.drawTileLayer("Floor");
+      this.drawTileLayer("Wall");
+      this.drawTileLayer("Furniture");
+      this.drawTileLayer("Decor");
+      this.drawObjects();
+      this.drawPlayer();
+      this.drawWorldGrid();
+
+      ctx.restore();
+
+      this.drawCameraOverlay();
+    },
+
+    getCamera() {
+      const viewW = this.canvas.width / CAMERA_ZOOM;
+      const viewH = this.canvas.height / CAMERA_ZOOM;
+      const targetX = this.player.x - viewW / 2;
+      const targetY = this.player.y - viewH / 2;
+      return {
+        x: clamp(targetX, 0, Math.max(0, WORLD_W - viewW)),
+        y: clamp(targetY, 0, Math.max(0, WORLD_H - viewH))
+      };
+    },
+
+    drawWorldGrid() {
+      const ctx = this.ctx;
+      ctx.save();
+      ctx.strokeStyle = "rgba(0, 217, 255, 0.035)";
+      ctx.lineWidth = 1 / CAMERA_ZOOM;
+      for (let x = 0; x <= WORLD_W; x += TILE) {
+        ctx.beginPath(); ctx.moveTo(x + 0.5, 0); ctx.lineTo(x + 0.5, WORLD_H); ctx.stroke();
+      }
+      for (let y = 0; y <= WORLD_H; y += TILE) {
+        ctx.beginPath(); ctx.moveTo(0, y + 0.5); ctx.lineTo(WORLD_W, y + 0.5); ctx.stroke();
+      }
+      ctx.restore();
+    },
+
+    drawCameraOverlay() {
+      const ctx = this.ctx;
+      ctx.save();
+      ctx.strokeStyle = "rgba(0, 217, 255, 0.26)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(0.5, 0.5, this.canvas.width - 1, this.canvas.height - 1);
+      ctx.fillStyle = "rgba(0, 217, 255, 0.72)";
+      ctx.font = "12px monospace";
+      ctx.textAlign = "left";
+      ctx.fillText(`ZOOM x${CAMERA_ZOOM.toFixed(1)} / CAMERA FOLLOW`, 12, 20);
+      ctx.restore();
+    },
+
+    drawTileLayer(name) {
+      const layer = layerByName(name);
+      if (!layer || layer.type !== "tilelayer") return;
+      for (let y = 0; y < layer.height; y++) {
+        for (let x = 0; x < layer.width; x++) {
+          const gid = layer.data[y * layer.width + x];
+          if (!gid) continue;
+          const src = gidToSource(gid);
+          if (!src) continue;
+          this.ctx.drawImage(this.images.tiles, src.sx, src.sy, src.sw, src.sh, x*TILE, y*TILE, TILE, TILE);
+        }
+      }
+    },
+
+    drawCollisionDebug() {
+      const layer = layerByName("Collision");
+      if (!layer) return;
+      const ctx = this.ctx;
+      ctx.save();
+      ctx.fillStyle = "rgba(255, 40, 76, 0.28)";
+      ctx.strokeStyle = "rgba(255, 40, 76, 0.75)";
+      for (let y = 0; y < layer.height; y++) {
+        for (let x = 0; x < layer.width; x++) {
+          const gid = layer.data[y * layer.width + x];
+          if (!gid) continue;
+          ctx.fillRect(x*TILE, y*TILE, TILE, TILE);
+          ctx.strokeRect(x*TILE + 0.5, y*TILE + 0.5, TILE - 1, TILE - 1);
+        }
+      }
+      ctx.restore();
+    },
+
+    drawObjects() {
+      const objects = layerByName("Objects")?.objects || [];
+      for (const obj of objects) {
+        if (obj.name === "player_spawn") continue;
+        if (obj.type === "npc") this.drawNpc(obj);
+        if (obj.type === "quest") this.drawObjectMarker(obj, "#00d9ff", "Q");
+        if (obj.type === "door") this.drawObjectMarker(obj, "#ff284c", "LOCK");
+        if (obj.type === "interaction") this.drawObjectMarker(obj, "#76f7ff", "CCTV");
+      }
+    },
+
+    drawNpc(obj) {
+      const ctx = this.ctx;
+      const gx = Math.floor(obj.x / TILE);
+      const gy = Math.floor(obj.y / TILE);
+      const cx = gx * TILE + TILE / 2;
+      const footY = gy * TILE + TILE / 2;
+
+      let color = "#00d9ff";
+      let label = "NPC";
+      if (obj.name.includes("vox")) { color = "#00d9ff"; label = "VOX"; }
+      if (obj.name.includes("valentino")) { color = "#ff285f"; label = "VAL"; }
+      if (obj.name.includes("velvet")) { color = "#ff4eb8"; label = "VEL"; }
+
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
+      // shadow
+      ctx.fillStyle = "rgba(0,0,0,0.36)";
+      ctx.fillRect(cx - 11, footY - 3, 22, 5);
+      // body
+      ctx.fillStyle = "#07111d";
+      ctx.fillRect(cx - 8, footY - 28, 16, 22);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(cx - 8.5, footY - 28.5, 17, 22);
+      // head
+      if (label === "VOX") {
+        ctx.fillStyle = "#06142a";
+        ctx.fillRect(cx - 13, footY - 44, 26, 16);
+        ctx.strokeStyle = "#00d9ff";
+        ctx.strokeRect(cx - 13.5, footY - 44.5, 27, 17);
+        ctx.fillStyle = "#ff284c";
+        ctx.fillRect(cx - 7, footY - 39, 5, 3);
+        ctx.fillStyle = "#00d9ff";
+        ctx.fillRect(cx + 2, footY - 39, 5, 3);
+      } else {
+        ctx.fillStyle = color;
+        ctx.fillRect(cx - 9, footY - 44, 18, 16);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(cx - 4, footY - 37, 8, 3);
+      }
+      // name tag
+      ctx.fillStyle = "rgba(0,0,0,0.72)";
+      ctx.fillRect(cx - 19, footY - 61, 38, 13);
+      ctx.strokeStyle = color;
+      ctx.strokeRect(cx - 19.5, footY - 61.5, 39, 14);
+      ctx.fillStyle = "#e8f8ff";
+      ctx.font = "9px monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(label, cx, footY - 51);
+      ctx.restore();
+    },
+
+    drawObjectMarker(obj, color, label) {
+      const ctx = this.ctx;
+      const x = obj.x;
+      const y = obj.y;
+      const w = obj.width || TILE;
+      const h = obj.height || TILE;
+      const isCctv = label === "CCTV";
+
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = isCctv ? "rgba(0, 217, 255, 0.10)" : "rgba(0,0,0,0.36)";
+      ctx.lineWidth = isCctv ? 2 : 1;
+      ctx.fillRect(x, y, w, h);
+      ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+
+      if (isCctv) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.76)";
+        ctx.fillRect(x + 5, y + 6, w - 10, h - 12);
+        ctx.strokeStyle = "rgba(118, 247, 255, 0.75)";
+        ctx.strokeRect(x + 5.5, y + 6.5, w - 11, h - 13);
+        ctx.font = "bold 12px monospace";
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "center";
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "rgba(0, 0, 0, 0.92)";
+        ctx.strokeText(label, x + w / 2, y + h / 2 + 1);
+        ctx.fillStyle = "#e8fbff";
+        ctx.fillText(label, x + w / 2, y + h / 2 + 1);
+      } else {
+        ctx.fillStyle = color;
+        ctx.font = "bold 9px monospace";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText(label, x + w / 2, y + h / 2 + 3);
+      }
+      ctx.restore();
+    },
+
+    drawPlayer() {
+      const p = this.player;
+      let img = this.images.playerIdle;
+      if (p.moving) img = p.step % 2 ? this.images.playerStepA : this.images.playerStepB;
+      this.ctx.drawImage(img, Math.round(p.x - SPRITE_W / 2), Math.round(p.y - SPRITE_H), SPRITE_W, SPRITE_H);
+    },
+
+    tryMove(dir) {
+      if (!this.ready || this.player.moving || dialog.box.classList.contains("active")) return;
+
+      const d = {
+        up: [0, -1],
+        down: [0, 1],
+        left: [-1, 0],
+        right: [1, 0]
+      }[dir];
+      if (!d) return;
+
+      this.player.facing = dir;
+      const nx = this.player.gx + d[0];
+      const ny = this.player.gy + d[1];
+
+      if (this.isBlocked(nx, ny)) {
+        this.refreshHud("통행 불가");
+        return;
+      }
+
+      this.player.fromX = this.player.x;
+      this.player.fromY = this.player.y;
+      this.player.gx = nx;
+      this.player.gy = ny;
+      this.player.tx = nx * TILE + TILE / 2;
+      this.player.ty = ny * TILE + TILE / 2;
+      this.player.moveStart = performance.now();
+      this.player.moving = true;
+      this.player.step++;
+      this.refreshHud("이동 중");
+    },
+
+    isBlocked(gx, gy) {
+      if (gx < 0 || gy < 0 || gx >= MAP_DATA.width || gy >= MAP_DATA.height) return true;
+      const collision = layerByName("Collision");
+      if (collision && collision.data[gy * collision.width + gx]) return true;
+
+      const objects = layerByName("Objects")?.objects || [];
+      return objects.some(obj => {
+        if (obj.type !== "npc") return false;
+        const ox = Math.floor(obj.x / TILE);
+        const oy = Math.floor(obj.y / TILE);
+        return ox === gx && oy === gy;
+      });
+    },
+
+    facingTile() {
+      const p = this.player;
+      const d = {
+        up: [0, -1],
+        down: [0, 1],
+        left: [-1, 0],
+        right: [1, 0]
+      }[p.facing] || [0, 1];
+      return { gx: p.gx + d[0], gy: p.gy + d[1] };
+    },
+
+    interact() {
+      if (!this.ready || this.player.moving) return;
+      if (dialog.box.classList.contains("active")) {
+        closeDialog();
+        return;
+      }
+
+      const obj = this.findInteractionObject();
+      if (obj) {
+        this.handleObject(obj);
+        return;
+      }
+
+      const inspect = this.inspectNearby();
+      if (inspect) {
+        showDialog(inspect.name, inspect.text);
+        return;
+      }
+
+      showDialog("SYSTEM", "눈에 띄는 대상은 없습니다.\n일이 끝난 건 아니겠지만요.");
+    },
+
+    findInteractionObject() {
+      const target = this.facingTile();
+      const p = this.player;
+      const checks = [target, { gx: p.gx, gy: p.gy }];
+
+      for (const point of checks) {
+        const obj = this.objectAt(point.gx, point.gy);
+        if (obj) return obj;
+      }
+
+      const zoneObj = this.objectByInteractionZone();
+      if (zoneObj) return zoneObj;
+
+      return this.nearestObject();
+    },
+
+    objectByInteractionZone() {
+      const objects = layerByName("Objects")?.objects || [];
+      const points = [this.facingTile(), { gx: this.player.gx, gy: this.player.gy }];
+      const candidates = [];
+      const priority = {
+        quest_terminal: 0,
+        cctv_console: 1,
+        npc_vox: 2,
+        npc_valentino: 2,
+        npc_velvet: 2,
+        door_ceo_office: 3
+      };
+
+      for (const obj of objects) {
+        if (obj.name === "player_spawn") continue;
+        for (const point of points) {
+          const hit = this.matchesInteractionZone(obj, point.gx, point.gy);
+          if (!hit) continue;
+          const pos = this.objectGridPos(obj);
+          const dist = Math.abs(pos.gx - this.player.gx) + Math.abs(pos.gy - this.player.gy);
+          candidates.push({ obj, dist, order: priority[obj.name] ?? 9 });
+          break;
+        }
+      }
+
+      candidates.sort((a, b) => a.order - b.order || a.dist - b.dist);
+      return candidates[0]?.obj || null;
+    },
+
+    matchesInteractionZone(obj, gx, gy) {
+      const pos = this.objectGridPos(obj);
+
+      if (obj.name === "quest_terminal") {
+        // The marker is a logical point, while the visible terminal occupies a broader tile area.
+        // Allow interaction from the front/bottom so the player can receive the work order naturally.
+        return gx >= pos.gx - 1 && gx <= pos.gx + 1 && gy >= pos.gy && gy <= pos.gy + 4;
+      }
+
+      if (obj.name === "cctv_console") {
+        return gx >= pos.gx - 1 && gx <= pos.gx + 2 && gy >= pos.gy && gy <= pos.gy + 3;
+      }
+
+      if (obj.name === "door_ceo_office") {
+        return gx >= pos.gx - 1 && gx <= pos.gx + 2 && gy >= pos.gy && gy <= pos.gy + 1;
+      }
+
+      return false;
+    },
+
+    objectGridPos(obj) {
+      if (obj.point) {
+        return { gx: Math.floor(obj.x / TILE), gy: Math.floor(obj.y / TILE) };
+      }
+      return {
+        gx: Math.floor((obj.x + (obj.width || TILE) / 2) / TILE),
+        gy: Math.floor((obj.y + (obj.height || TILE) / 2) / TILE)
+      };
+    },
+
+    nearestObject() {
+      const objects = layerByName("Objects")?.objects || [];
+      const priority = {
+        quest_terminal: 0,
+        cctv_console: 1,
+        npc_vox: 2,
+        npc_valentino: 2,
+        npc_velvet: 2,
+        door_ceo_office: 3
+      };
+      const candidates = [];
+      for (const obj of objects) {
+        if (obj.name === "player_spawn") continue;
+        const pos = this.objectGridPos(obj);
+        const dist = Math.abs(pos.gx - this.player.gx) + Math.abs(pos.gy - this.player.gy);
+        const limit = obj.name === "quest_terminal" ? 3 : obj.name === "cctv_console" ? 2 : 1;
+        if (dist <= limit) candidates.push({ obj, dist, order: priority[obj.name] ?? 9 });
+      }
+      candidates.sort((a, b) => a.order - b.order || a.dist - b.dist);
+      return candidates[0]?.obj || null;
+    },
+
+    objectAt(gx, gy) {
+      const objects = layerByName("Objects")?.objects || [];
+      const px = gx * TILE + TILE / 2;
+      const py = gy * TILE + TILE / 2;
+
+      for (const obj of objects) {
+        if (obj.name === "player_spawn") continue;
+        if (obj.point) {
+          const ox = Math.floor(obj.x / TILE);
+          const oy = Math.floor(obj.y / TILE);
+          if (ox === gx && oy === gy) return obj;
+        } else {
+          const x0 = obj.x;
+          const y0 = obj.y;
+          const x1 = obj.x + (obj.width || TILE);
+          const y1 = obj.y + (obj.height || TILE);
+          if (px >= x0 && px < x1 && py >= y0 && py < y1) return obj;
+        }
+      }
+      return null;
+    },
+
+    inspectNearby() {
+      const p = this.player;
+      const facing = this.facingTile();
+      const points = [
+        facing,
+        { gx: p.gx, gy: p.gy },
+        { gx: p.gx, gy: p.gy - 1 },
+        { gx: p.gx + 1, gy: p.gy },
+        { gx: p.gx, gy: p.gy + 1 },
+        { gx: p.gx - 1, gy: p.gy }
+      ];
+
+      const seen = new Set();
+      for (const point of points) {
+        const key = `${point.gx},${point.gy}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const info = this.describeTile(point.gx, point.gy);
+        if (info) return info;
+      }
+      return null;
+    },
+
+    describeTile(gx, gy) {
+      if (gx < 0 || gy < 0 || gx >= MAP_DATA.width || gy >= MAP_DATA.height) return null;
+      const layerOrder = ["Decor", "Furniture", "Wall"];
+      for (const layerName of layerOrder) {
+        const tileId = this.tileAt(layerName, gx, gy);
+        if (!tileId) continue;
+        const info = TILE_DESCRIPTIONS[tileId];
+        if (info) return info;
+      }
+      return null;
+    },
+
+    tileAt(layerName, gx, gy) {
+      const layer = layerByName(layerName);
+      if (!layer || gx < 0 || gy < 0 || gx >= layer.width || gy >= layer.height) return 0;
+      return layer.data[gy * layer.width + gx] || 0;
+    },
+
+    handleObject(obj) {
+      if (obj.name === "cctv_console") {
+        const workChecked = localStorage.getItem(storageKey("work_checked")) === "1";
+        if (!workChecked) {
+          this.refreshHud("지시 수신 필요");
+          showDialog("CCTV", "먼저 일일 업무 단말기에서 오늘의 업무를 받아.\n\n업무 수신 전 CCTV 조회는 임무 기록에 반영되지 않습니다.");
+          return;
+        }
+
+        if (localStorage.getItem(storageKey("cctv")) === "1") {
+          this.refreshHud("CCTV 이미 확인");
+          showDialog("CCTV", "CCTV 기록은 이미 확인되었습니다.\n이제 일일 업무 단말기에 보고하면 됩니다.");
+          return;
+        }
+
+        localStorage.setItem(storageKey("cctv"), "1");
+        this.refreshHud("CCTV 확인");
+        showDialog("CCTV", "CCTV 기록 확인 완료.\n이제 일일 업무 단말기에 보고하면 오늘의 업무가 완료됩니다.");
+        return;
+      }
+
+      if (obj.name === "quest_terminal") {
+        const workChecked = localStorage.getItem(storageKey("work_checked")) === "1";
+        const cctv = localStorage.getItem(storageKey("cctv")) === "1";
+        const done = localStorage.getItem(storageKey("quest_done")) === "1";
+
+        if (done) {
+          this.completeQuest();
+          return;
+        }
+
+        if (!workChecked) {
+          this.markWorkChecked();
+          return;
+        }
+
+        if (!cctv) {
+          this.refreshHud("CCTV 대기");
+          showDialog("QUEST TERMINAL", "거기서 꾸물거릴 시간이 있으면 일을 해.\nCCTV 기록부터 확인해.");
+          return;
+        }
+
+        this.completeQuest();
+        return;
+      }
+
+      if (obj.name === "door_ceo_office") {
+        showDialog("CEO OFFICE", "대표 승인 없는 접근은 기록됩니다.\n현재 이 문은 잠겨 있습니다.");
+        return;
+      }
+
+      if (obj.name === "npc_vox") {
+        this.handleNpc("vox");
+        return;
+      }
+
+      if (obj.name === "npc_valentino") {
+        this.handleNpc("valentino");
+        return;
+      }
+
+      if (obj.name === "npc_velvet") {
+        this.handleNpc("velvet");
+        return;
+      }
+    },
+
+    getAffection(npc) {
+      return Number(localStorage.getItem(affectionKey(npc)) || "0");
+    },
+
+    setAffection(npc, value) {
+      localStorage.setItem(affectionKey(npc), String(clamp(value, 0, 100)));
+    },
+
+    dailyTalkKey(npc) {
+      return storageKey(`talked_${npc}`);
+    },
+
+    handleNpc(npc) {
+      const meta = NPC_META[npc];
+      const affection = this.getAffection(npc);
+      const header = `${meta.title} (${affection})`;
+
+      if (npc === "vox" && localStorage.getItem(storageKey("quest_done")) !== "1") {
+        this.handleVoxWorkOrder(header);
+        return;
+      }
+
+      if (affection >= 100) {
+        showDialog(header, meta.special(playerDisplayName()));
+        return;
+      }
+
+      if (localStorage.getItem(this.dailyTalkKey(npc)) === "1") {
+        showDialog(header, "오늘 대화는 끝.\n더 붙잡아도 호감도는 기록되지 않습니다.");
+        return;
+      }
+
+      const pool = NPC_DIALOGUES[npc] || [];
+      const line = pool[Math.floor(Math.random() * pool.length)];
+      const choices = line.choices.map(choice => ({
+        label: choice.label,
+        onClick: () => this.chooseNpcResponse(npc, line, choice)
+      }));
+      showDialog(header, line.prompt, choices);
+    },
+
+    handleVoxWorkOrder(header) {
+      const workChecked = localStorage.getItem(storageKey("work_checked")) === "1";
+      const cctv = localStorage.getItem(storageKey("cctv")) === "1";
+      const done = localStorage.getItem(storageKey("quest_done")) === "1";
+
+      if (done) {
+        this.handleNpc("vox");
+        return;
+      }
+
+      if (!workChecked) {
+        localStorage.setItem(storageKey("work_checked"), "1");
+        this.refreshHud("지시 수신");
+        showDialog(header, "오늘의 업무다. CCTV 기록을 확인해.\n확인했으면 이 단말기에 보고하고.");
+        return;
+      }
+
+      if (!cctv) {
+        this.refreshHud("CCTV 대기");
+        showDialog(header, "거기서 꾸물거릴 시간이 있으면 일을 해.\nCCTV 기록부터 확인해.");
+        return;
+      }
+
+      this.completeQuest(header);
+    },
+
+    chooseNpcResponse(npc, line, choice) {
+      const meta = NPC_META[npc];
+      const before = this.getAffection(npc);
+      const after = clamp(before + choice.delta, 0, 100);
+      this.setAffection(npc, after);
+      localStorage.setItem(this.dailyTalkKey(npc), "1");
+      this.refreshHud("호감도 기록");
+
+      const sign = choice.delta > 0 ? `+${choice.delta}` : String(choice.delta);
+      const header = `${meta.title} (${after})`;
+
+      if (after >= 100) {
+        showDialog(header, `${choice.response}\n\n호감도 ${sign} (${before} → ${after})\n\n${meta.special(playerDisplayName())}\n\n오늘 대화는 끝.`);
+        return;
+      }
+
+      showDialog(header, `${choice.response}\n\n호감도 ${sign} (${before} → ${after})\n오늘 대화는 끝.`);
+    },
+
+    markWorkChecked() {
+      if (localStorage.getItem(storageKey("work_checked")) === "1") {
+        this.refreshHud("지시 수신 완료");
+        showDialog("QUEST TERMINAL", "거기서 꾸물거릴 시간이 있으면 일을 해.\nCCTV 기록부터 확인해.");
+        return;
+      }
+
+      localStorage.setItem(storageKey("work_checked"), "1");
+      this.refreshHud("지시 수신");
+      showDialog("QUEST TERMINAL", "오늘의 업무: CCTV 기록 확인.\n\n확인 후 이 단말기에 다시 보고해.");
+    },
+
+    addAffection(npc, amount) {
+      const current = this.getAffection(npc);
+      this.setAffection(npc, current + amount);
+      this.refreshHud("호감도 기록");
+    },
+
+    completeQuest(dialogHeader = "QUEST TERMINAL") {
+      const doneKey = storageKey("quest_done");
+      const workChecked = localStorage.getItem(storageKey("work_checked")) === "1";
+      const cctv = localStorage.getItem(storageKey("cctv")) === "1";
+
+      if (!workChecked) {
+        this.refreshHud("지시 수신 필요");
+        showDialog(dialogHeader, "먼저 이 단말기에서 오늘의 업무를 받아.\n업무 수신 전에는 완료 처리가 되지 않습니다.");
+        return;
+      }
+
+      if (!cctv) {
+        this.refreshHud("CCTV 대기");
+        showDialog(dialogHeader, "아직 CCTV 기록이 확인되지 않았습니다.\nCCTV 콘솔을 확인한 뒤 다시 보고해.");
+        return;
+      }
+
+      if (localStorage.getItem(doneKey) === "1") {
+        showDialog(dialogHeader, "오늘의 업무 점수는 이미 반영되었습니다.\n하루에 여러 번 완료해도 인사평가는 1회만 적용됩니다.");
+        this.refreshHud("이미 완료");
+        return;
+      }
+      localStorage.setItem(doneKey, "1");
+      localStorage.setItem(storageKey("score"), "10");
+      notifyParentDailyWorkCompleted();
+      this.refreshHud("임무 완료");
+      showDialog(dialogHeader, "오늘의 업무 완료.\n일 가산점 +10점이 기록되었습니다.");
+    },
+
+    refreshHud(state = null) {
+      if (state) $("hudState").textContent = state;
+      const p = this.player;
+      $("hudPos").textContent = `${p.gx}, ${p.gy}`;
+      const facingKo = { down: "아래", up: "위", left: "왼쪽", right: "오른쪽" }[p.facing] || "아래";
+      $("hudFacing").textContent = facingKo;
+      $("hudScore").textContent = localStorage.getItem(storageKey("score")) || "0";
+      $("hudWork").textContent = localStorage.getItem(storageKey("work_checked")) === "1" ? "수신" : "미수신";
+      $("hudCctv").textContent = localStorage.getItem(storageKey("cctv")) === "1" ? "확인" : "미확인";
+      $("hudQuest").textContent = localStorage.getItem(storageKey("quest_done")) === "1" ? "완료" : "미완료";
+      $("hudAffVelvet").textContent = this.getAffection("velvet");
+      $("hudAffValentino").textContent = this.getAffection("valentino");
+      $("hudAffVox").textContent = this.getAffection("vox");
+    }
+  };
+
+  window.addEventListener("keydown", (e) => {
+    const key = e.key.toLowerCase();
+    if (key === "escape") {
+      clearHeldDirections();
+      if (dialog.box.classList.contains("active")) closeDialog();
+      else showScreen("menu");
+      return;
+    }
+    if (key === " " || key === "enter") {
+      e.preventDefault();
+      clearHeldDirections();
+      if (screens.game.classList.contains("active")) game.interact();
+      return;
+    }
+    const dir = keyDirectionMap[key];
+    if (dir && screens.game.classList.contains("active")) {
+      e.preventDefault();
+      heldDirections.add(dir);
+      activeHeldDirection = dir;
+      if (!game.player.moving) game.tryMove(dir);
+    }
+  });
+
+  window.addEventListener("keyup", (e) => {
+    const dir = keyDirectionMap[e.key.toLowerCase()];
+    if (!dir) return;
+    heldDirections.delete(dir);
+    if (activeHeldDirection === dir) {
+      activeHeldDirection = Array.from(heldDirections).pop() || null;
+    }
+  });
+
+  document.querySelectorAll("[data-dir]").forEach(btn => {
+    btn.addEventListener("click", () => game.tryMove(btn.dataset.dir));
+  });
+  $("btnInteractMobile").addEventListener("click", () => game.interact());
+
+  const launchParams = new URLSearchParams(window.location.search);
+  if (launchParams.get("autostart") === "1" || launchParams.get("mode") === "work") {
+    closeDialog();
+    showScreen("game");
+  }
+
+})();
+</script>
+</body>
+</html>
