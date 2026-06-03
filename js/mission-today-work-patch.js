@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const TODAY_WORK_URL = "today-work.html?autostart=1&v=20260603-blankfix";
+  const TODAY_WORK_URL = "today-work.html?v=20260603-lite&autostart=1";
   const DAILY_WORK_SCORE = 10;
   const EMPLOYEE_KEY = "voxtek_employee_v1";
   const EVAL_STORAGE_PREFIX = "voxtek_june_evaluation_v1_";
@@ -14,31 +14,27 @@
   let originalEvaluationScore = null;
   let bridgeClient = null;
 
-  function $(id) {
-    return document.getElementById(id);
-  }
+  function $(id) { return document.getElementById(id); }
 
-  function pad2(value) {
-    return String(value).padStart(2, "0");
-  }
-
-  function todayKey() {
-    const d = new Date();
-    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+  function getMissionShell() {
+    return (
+      document.querySelector("#window-helltalk .mission-shell") ||
+      document.querySelector("#missionWindow .mission-shell") ||
+      document.querySelector("#mission-window .mission-shell") ||
+      (document.getElementById("missionGateView") && document.getElementById("missionGateView").closest(".mission-shell")) ||
+      document.querySelector(".mission-shell")
+    );
   }
 
   function getEmployee() {
-    try {
-      return JSON.parse(localStorage.getItem(EMPLOYEE_KEY) || "null");
-    } catch (error) {
-      return null;
-    }
+    try { return JSON.parse(localStorage.getItem(EMPLOYEE_KEY) || "null"); }
+    catch (error) { return null; }
   }
 
-  function escapeHtml(value) {
-    return String(value == null ? "" : value).replace(/[&<>"']/g, function (match) {
-      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" })[match];
-    });
+  function pad2(value) { return String(value).padStart(2, "0"); }
+  function todayKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
   }
 
   function getBridgeClient() {
@@ -53,22 +49,35 @@
     return bridgeClient;
   }
 
-  function getMissionShell() {
-    return (
-      document.querySelector("#window-helltalk .mission-shell") ||
-      document.querySelector("#missionWindow .mission-shell") ||
-      document.querySelector("#mission-window .mission-shell") ||
-      (document.getElementById("missionGateView") && document.getElementById("missionGateView").closest(".mission-shell")) ||
-      (document.getElementById("missionChatView") && document.getElementById("missionChatView").closest(".mission-shell")) ||
-      document.querySelector(".mission-shell")
-    );
+  function ensureStyles() {
+    if ($("missionTodayWorkPatchStyle")) return;
+    const style = document.createElement("style");
+    style.id = "missionTodayWorkPatchStyle";
+    style.textContent = `
+      .mission-selector-inner{padding:22px;min-height:560px;background:linear-gradient(180deg,rgba(3,18,31,.96),rgba(2,8,17,.98));border:1px solid rgba(0,216,255,.22)}
+      .mission-selector-copy{border:1px solid rgba(0,216,255,.26);background:rgba(0,26,42,.58);padding:22px;margin-bottom:18px}
+      .mission-selector-copy span{display:block;color:#00e5ff;letter-spacing:.22em;font-size:12px}
+      .mission-selector-copy h3{font-size:38px;margin:14px 0 10px;color:#fff;letter-spacing:-.04em}
+      .mission-selector-copy p{margin:0;color:#b8e9ff;line-height:1.7}
+      .mission-selector-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+      .mission-selector-card{text-align:left;border:1px solid rgba(0,216,255,.34);background:linear-gradient(145deg,rgba(5,18,32,.96),rgba(3,12,23,.98));color:#eaf9ff;padding:20px;min-height:170px;cursor:pointer;position:relative;overflow:hidden}
+      .mission-selector-card:before{content:"";position:absolute;right:-46px;bottom:-38px;width:130px;height:130px;border:1px solid rgba(0,216,255,.24);transform:skewX(-18deg)}
+      .mission-selector-card:hover,.mission-selector-card:focus-visible{outline:none;border-color:rgba(255,255,255,.86);box-shadow:0 0 24px rgba(0,220,255,.16)}
+      .mission-selector-card small{display:block;color:#7cb7ca;letter-spacing:.18em;margin-bottom:18px}
+      .mission-selector-card strong{display:block;font-size:28px;margin-bottom:10px;color:#fff}
+      .mission-selector-card span{display:block;color:#c8eeff;line-height:1.7}
+      .mission-today-work-frame{display:block;width:100%;height:min(760px,calc(100vh - 190px));border:0;background:#01070d}
+      .mission-today-work-view{background:#01070d}
+      @media(max-width:760px){.mission-selector-grid{grid-template-columns:1fr}.mission-selector-copy h3{font-size:30px}.mission-today-work-frame{height:calc(100vh - 150px)}}
+    `;
+    document.head.appendChild(style);
   }
 
   function ensureSelectorViews() {
     const shell = getMissionShell();
     if (!shell) return false;
 
-    if (!$('missionSelectorView')) {
+    if (!$("missionSelectorView")) {
       const selector = document.createElement("section");
       selector.id = "missionSelectorView";
       selector.className = "mission-panel hidden mission-selector-view";
@@ -100,7 +109,7 @@
       shell.prepend(selector);
     }
 
-    if (!$('missionTodayWorkView')) {
+    if (!$("missionTodayWorkView")) {
       const view = document.createElement("section");
       view.id = "missionTodayWorkView";
       view.className = "mission-panel hidden mission-today-work-view";
@@ -116,9 +125,10 @@
       shell.appendChild(view);
     }
 
-    const eggBtn = $('missionOpenEggChannel');
-    const todayBtn = $('missionOpenTodayWorkChannel');
-    const backBtn = $('missionTodayWorkBack');
+    const eggBtn = $("missionOpenEggChannel");
+    const todayBtn = $("missionOpenTodayWorkChannel");
+    const backBtn = $("missionTodayWorkBack");
+
     if (eggBtn && !eggBtn.dataset.bound) {
       eggBtn.dataset.bound = "1";
       eggBtn.addEventListener("click", showEggChannel);
@@ -134,117 +144,77 @@
     return true;
   }
 
-  function ensureStyles() {
-    if ($('missionTodayWorkPatchStyle')) return;
-    const style = document.createElement("style");
-    style.id = "missionTodayWorkPatchStyle";
-    style.textContent = `
-      .mission-selector-inner{padding:22px;min-height:560px;background:linear-gradient(180deg,rgba(3,18,31,.96),rgba(2,8,17,.98));border:1px solid rgba(0,216,255,.22)}
-      .mission-selector-copy{border:1px solid rgba(0,216,255,.26);background:rgba(0,26,42,.58);padding:22px;margin-bottom:18px}.mission-selector-copy span{display:block;color:#00e5ff;letter-spacing:.22em;font-size:12px}.mission-selector-copy h3{font-size:38px;margin:14px 0 10px;color:#fff;letter-spacing:-.04em}.mission-selector-copy p{margin:0;color:#b8e9ff;line-height:1.7}.mission-selector-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.mission-selector-card{text-align:left;border:1px solid rgba(0,216,255,.34);background:linear-gradient(145deg,rgba(5,18,32,.96),rgba(3,12,23,.98));color:#eaf9ff;padding:20px;min-height:170px;cursor:pointer;position:relative;overflow:hidden}.mission-selector-card:before{content:"";position:absolute;right:-46px;bottom:-38px;width:130px;height:130px;border:1px solid rgba(0,216,255,.24);transform:skewX(-18deg)}.mission-selector-card:hover,.mission-selector-card:focus-visible{outline:none;border-color:rgba(255,255,255,.86);box-shadow:0 0 24px rgba(0,220,255,.16)}.mission-selector-card small{display:block;color:#7cb7ca;letter-spacing:.18em;margin-bottom:18px}.mission-selector-card strong{display:block;font-size:28px;margin-bottom:10px;color:#fff}.mission-selector-card span{display:block;color:#c8eeff;line-height:1.7}.mission-today-work-frame{display:block;width:100%;height:min(760px,calc(100vh - 190px));border:0;background:#01070d}.mission-today-work-view{background:#01070d}@media(max-width:760px){.mission-selector-grid{grid-template-columns:1fr}.mission-selector-copy h3{font-size:30px}.mission-today-work-frame{height:calc(100vh - 150px)}}
-    `;
-    document.head.appendChild(style);
-  }
-
   function hideMissionPanels() {
     [
-      'missionGateView', 'missionChatView', 'missionSetupView', 'missionGameView',
-      'missionFinalView', 'missionDeadView', 'missionSelectorView', 'missionTodayWorkView'
+      "missionGateView","missionChatView","missionSetupView","missionGameView",
+      "missionFinalView","missionDeadView","missionSelectorView","missionTodayWorkView"
     ].forEach((id) => {
       const node = $(id);
-      if (node) node.classList.add('hidden');
+      if (node) node.classList.add("hidden");
     });
-    const admin = $('adminMissionShell');
-    if (admin) admin.classList.add('hidden');
-  }
-
-  function showMissionSelector() {
-    ensureSelectorViews();
-    hideMissionPanels();
-    const selector = $('missionSelectorView');
-    if (selector) selector.classList.remove('hidden');
-  }
-
-  function showEggChannel() {
-    hideMissionPanels();
-    if (typeof originalMissionRender === 'function') {
-      originalMissionRender();
-    } else if ($('missionChatView')) {
-      $('missionChatView').classList.remove('hidden');
-    }
-  }
-
-  function showTodayWorkChannel() {
-    ensureSelectorViews();
-    hideMissionPanels();
-    const frame = $('missionTodayWorkFrame');
-    if (frame && !frame.src) frame.src = TODAY_WORK_URL;
-    const view = $('missionTodayWorkView');
-    if (view) view.classList.remove('hidden');
+    const admin = $("adminMissionShell");
+    if (admin) admin.classList.add("hidden");
   }
 
   function isVisible(node) {
     if (!node) return false;
-    if (node.classList && node.classList.contains('hidden')) return false;
+    if (node.classList && node.classList.contains("hidden")) return false;
     const style = window.getComputedStyle(node);
-    return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+    return style.display !== "none" && style.visibility !== "hidden";
   }
 
   function shouldUseMissionSelector() {
     const employee = getEmployee();
     if (!employee || employee.isAdmin) return false;
-
     try {
-      if (typeof window.missionEnsureState === 'function') {
+      if (typeof window.missionEnsureState === "function") {
         const state = window.missionEnsureState();
         if (state && state.missionAccessGranted) return true;
       }
     } catch (error) {}
-
-    // Fallback: app.js가 비밀번호 통과 후 기존 알키우기 채널을 보여준 경우.
-    // 이때는 selector로 갈아끼운다.
-    const gate = $('missionGateView');
-    const chat = $('missionChatView');
-    const setup = $('missionSetupView');
-    const game = $('missionGameView');
-    if (!isVisible(gate) && (isVisible(chat) || isVisible(setup) || isVisible(game))) return true;
-
-    return false;
+    const gate = $("missionGateView");
+    const chat = $("missionChatView");
+    const setup = $("missionSetupView");
+    const game = $("missionGameView");
+    return !isVisible(gate) && (isVisible(chat) || isVisible(setup) || isVisible(game));
   }
 
+  function showMissionSelector() {
+    ensureStyles();
+    ensureSelectorViews();
+    hideMissionPanels();
+    const selector = $("missionSelectorView");
+    if (selector) selector.classList.remove("hidden");
+  }
 
-  function bindPasswordFollowup() {
-    const btn = $('missionPasswordBtn');
-    const input = $('missionPasswordInput');
-    const follow = () => setTimeout(() => {
-      if (shouldUseMissionSelector()) showMissionSelector();
-    }, 80);
-    if (btn && !btn.dataset.todayWorkFollowupBound) {
-      btn.dataset.todayWorkFollowupBound = '1';
-      btn.addEventListener('click', follow);
-    }
-    if (input && !input.dataset.todayWorkFollowupBound) {
-      input.dataset.todayWorkFollowupBound = '1';
-      input.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') follow();
-      });
-    }
+  function showEggChannel() {
+    hideMissionPanels();
+    if (typeof originalMissionRender === "function") originalMissionRender();
+    else if ($("missionChatView")) $("missionChatView").classList.remove("hidden");
+  }
+
+  function showTodayWorkChannel() {
+    ensureStyles();
+    ensureSelectorViews();
+    hideMissionPanels();
+    const frame = $("missionTodayWorkFrame");
+    if (frame && !frame.src) frame.src = TODAY_WORK_URL;
+    const view = $("missionTodayWorkView");
+    if (view) view.classList.remove("hidden");
   }
 
   function patchMissionRender() {
     if (window.__voxtekTodayWorkPatchApplied) return;
     window.__voxtekTodayWorkPatchApplied = true;
-    originalMissionRender = typeof window.missionRender === 'function' ? window.missionRender : null;
-    originalMissionVerifyPassword = typeof window.missionVerifyPassword === 'function' ? window.missionVerifyPassword : null;
+
+    originalMissionRender = typeof window.missionRender === "function" ? window.missionRender : null;
+    originalMissionVerifyPassword = typeof window.missionVerifyPassword === "function" ? window.missionVerifyPassword : null;
 
     if (originalMissionRender) {
       window.missionRender = function missionRenderWithSelector() {
-        ensureStyles();
-        ensureSelectorViews();
-        if (shouldUseMissionSelector()) {
-          showMissionSelector();
-          return;
-        }
-        return originalMissionRender.apply(this, arguments);
+        const result = originalMissionRender.apply(this, arguments);
+        if (shouldUseMissionSelector()) showMissionSelector();
+        return result;
       };
     }
 
@@ -253,16 +223,36 @@
         const result = originalMissionVerifyPassword.apply(this, arguments);
         setTimeout(() => {
           if (shouldUseMissionSelector()) showMissionSelector();
-        }, 20);
+        }, 80);
         return result;
       };
     }
   }
 
+  function bindPasswordFollowup() {
+    const btn = $("missionPasswordBtn");
+    const input = $("missionPasswordInput");
+    const follow = () => setTimeout(() => {
+      if (shouldUseMissionSelector()) showMissionSelector();
+    }, 120);
+
+    if (btn && !btn.dataset.todayWorkFollowupBound) {
+      btn.dataset.todayWorkFollowupBound = "1";
+      btn.addEventListener("click", follow);
+    }
+    if (input && !input.dataset.todayWorkFollowupBound) {
+      input.dataset.todayWorkFollowupBound = "1";
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") follow();
+      });
+    }
+  }
+
   function patchEvaluationScore() {
     if (window.__voxtekTodayWorkScorePatchApplied) return;
-    originalEvaluationScore = typeof window.evaluationScore === 'function' ? window.evaluationScore : null;
+    originalEvaluationScore = typeof window.evaluationScore === "function" ? window.evaluationScore : null;
     if (!originalEvaluationScore) return;
+
     window.__voxtekTodayWorkScorePatchApplied = true;
     window.evaluationScore = function evaluationScoreWithDailyBonus(state) {
       const attendance = new Set((state && state.attendanceDates) || []).size;
@@ -274,12 +264,12 @@
         if (Number.isFinite(value) && value > 0) return sum + value;
         return sum + (item && item.perfect ? 3 : 2);
       }, 0);
-      return { attendance, clearCount, perfectCount, total:attendance + orderScore };
+      return { attendance, clearCount, perfectCount, total: attendance + orderScore };
     };
   }
 
   function evaluationStorageKey(employee) {
-    const id = employee && (employee.employeeId || employee.name) ? (employee.employeeId || employee.name) : 'unknown';
+    const id = employee && (employee.employeeId || employee.name) ? (employee.employeeId || employee.name) : "unknown";
     return `${EVAL_STORAGE_PREFIX}${EVAL_YEAR}_${id}`;
   }
 
@@ -289,24 +279,17 @@
     const date = payload.localDate || todayKey();
     const key = evaluationStorageKey(employee);
     let state;
-    try {
-      state = JSON.parse(localStorage.getItem(key) || '{}');
-    } catch (error) {
-      state = {};
-    }
+    try { state = JSON.parse(localStorage.getItem(key) || "{}"); }
+    catch (error) { state = {}; }
+
     state.attendanceDates = Array.isArray(state.attendanceDates) ? state.attendanceDates : [];
-    state.clearedOrders = state.clearedOrders && typeof state.clearedOrders === 'object' ? state.clearedOrders : {};
+    state.clearedOrders = state.clearedOrders && typeof state.clearedOrders === "object" ? state.clearedOrders : {};
+
     if (!state.clearedOrders[date]) {
       const day = Number(date.slice(-2)) || new Date().getDate();
       state.clearedOrders[date] = {
-        day,
-        perfect:false,
-        completedAt:payload.completedAt || new Date().toISOString(),
-        attempts:1,
-        misses:0,
-        clearTimeMs:0,
-        scoreGain:DAILY_WORK_SCORE,
-        source:'today_work_cctv'
+        day, perfect:false, completedAt:payload.completedAt || new Date().toISOString(),
+        attempts:1, misses:0, clearTimeMs:0, scoreGain:DAILY_WORK_SCORE, source:"today_work_cctv"
       };
       state.updatedAt = new Date().toISOString();
       localStorage.setItem(key, JSON.stringify(state));
@@ -319,52 +302,86 @@
     const employee = getEmployee();
     const client = getBridgeClient();
     if (!employee || employee.isAdmin || !client) return;
+
     const date = payload.localDate || todayKey();
     const detail = {
-      source:'today_work_cctv',
-      quest_id:payload.questId || 'daily_cctv_report',
-      order_text:'CCTV 기록 확인',
+      source:"today_work",
+      channel:"today_work",
+      mission_key:"today_work_cctv",
+      quest_id:payload.questId || "daily_cctv_report",
+      order_text:"CCTV 기록 확인",
       score_gain:DAILY_WORK_SCORE,
       inserted_local:!!insertedLocal,
       client_time:new Date().toISOString()
     };
+
     try {
-      await client.from('voxtek_events').insert({
-        event_type:'DAILY_ORDER_CLEARED',
-        account_id:employee.employeeId || employee.name || '',
-        employee_name:employee.name || '',
+      await client.from("voxtek_events").insert({
+        event_type:"DAILY_ORDER_CLEARED",
+        account_id:employee.employeeId || employee.name || "",
+        employee_name:employee.name || "",
         mission_id:null,
         creature_name:null,
         mission_day:null,
         points:null,
         affection:null,
         local_date:date,
-        session_id:localStorage.getItem('voxtek_mission_session_v1') || '',
+        session_id:localStorage.getItem("voxtek_mission_session_v1") || "",
         user_agent:navigator.userAgent,
         detail
       });
     } catch (error) {
-      console.warn('Today-work event record failed:', error);
+      console.warn("Today-work event record failed:", error);
     }
   }
 
-  function handleTodayWorkMessage(event) {
-    if (event.origin !== window.location.origin) return;
-    const data = event.data || {};
-    if (!data || data.type !== 'VOXTEK_TODAY_WORK_COMPLETED') return;
-    const insertedLocal = recordLocalEvaluation(data);
-    recordSupabaseEvent(data, insertedLocal);
-    patchEvaluationScore();
+  async function recordNpcAffection(payload) {
+    const employee = getEmployee();
+    const client = getBridgeClient();
+    if (!employee || employee.isAdmin || !client) return;
     try {
-      if (typeof window.renderEvaluation === 'function') window.renderEvaluation();
-    } catch (error) {}
+      await client.from("voxtek_events").insert({
+        event_type:"NPC_AFFECTION",
+        account_id:employee.employeeId || employee.name || "",
+        employee_name:employee.name || "",
+        npc_id:payload.npcId || "",
+        affection_delta:Number(payload.affectionDelta || 0),
+        local_date:payload.localDate || todayKey(),
+        user_agent:navigator.userAgent,
+        detail:{
+          source:"today_work",
+          npc_id:payload.npcId || "",
+          affection_delta:Number(payload.affectionDelta || 0),
+          choice_text:payload.choiceText || "",
+          client_time:new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      console.warn("NPC affection record failed:", error);
+    }
   }
 
-  function maybeShowSelector() {
-    ensureStyles();
-    ensureSelectorViews();
-    bindPasswordFollowup();
-    if (shouldUseMissionSelector()) showMissionSelector();
+  function handleMessage(event) {
+    if (event.origin !== window.location.origin) return;
+    const data = event.data || {};
+    if (!data || !data.type) return;
+
+    if (data.type === "VOXTEK_TODAY_WORK_BACK") {
+      showMissionSelector();
+      return;
+    }
+
+    if (data.type === "VOXTEK_TODAY_WORK_COMPLETED") {
+      const insertedLocal = recordLocalEvaluation(data);
+      recordSupabaseEvent(data, insertedLocal);
+      patchEvaluationScore();
+      try { if (typeof window.renderEvaluation === "function") window.renderEvaluation(); } catch (error) {}
+      return;
+    }
+
+    if (data.type === "VOXTEK_NPC_AFFECTION") {
+      recordNpcAffection(data);
+    }
   }
 
   function init() {
@@ -373,28 +390,17 @@
     patchMissionRender();
     bindPasswordFollowup();
     patchEvaluationScore();
-    window.addEventListener('message', handleTodayWorkMessage);
+    window.addEventListener("message", handleMessage);
     window.__voxtekTodayWorkSelectorReady = true;
 
-    // app.js 로딩 순서가 다르거나, 비밀번호 통과 후 DOM이 늦게 바뀌는 경우를 대비.
-    let tries = 0;
-    const timer = setInterval(() => {
-      tries += 1;
-      patchMissionRender();
-      maybeShowSelector();
-      if (tries > 80) clearInterval(timer);
-    }, 250);
-
-    try {
-      const shell = getMissionShell() || document.body;
-      const observer = new MutationObserver(() => {
-        patchMissionRender();
-        maybeShowSelector();
-      });
-      observer.observe(shell, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
-    } catch (error) {}
+    // 가벼운 보정만 수행. MutationObserver/무한 재삽입 사용 안 함.
+    setTimeout(() => {
+      ensureSelectorViews();
+      bindPasswordFollowup();
+      if (shouldUseMissionSelector()) showMissionSelector();
+    }, 400);
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
 })();
