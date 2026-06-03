@@ -397,7 +397,6 @@ function assetFail(img){
     <p class="memo-section-title"><strong>직속비서팀원:</strong></p>
 
 <p>
-  Eᴛʜᴀɴ @EthanAssistVox<br>
   Ethan @Ethan_Voxtek<br>
   아구찜 @kranjjang0315&nbsp;(임시)
 </p>
